@@ -1,7 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
 
 void main() {
-  runApp(const MyApp());
+  AwesomeNotifications().initialize(
+    null,
+    [
+      NotificationChannel(
+        channelKey: 'basic_channel',
+        channelName: 'Basic notifications',
+        channelDescription: 'Notification channel for basic tests',
+        defaultColor: Color(0xFF9D50DD),
+        ledColor: Colors.white,
+        importance: NotificationImportance.High,
+    channelShowBadge: true,
+  ),
+],
+);
+AwesomeNotifications().requestPermissionToSendNotifications();
+runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -312,26 +328,34 @@ class _MyHomePageState extends State<MyHomePage> {
                                 );
 
                                 if (title.isNotEmpty && minutes != null) {
-                                  setState(() {
-                                    _sunriseEventList.add(
-                                      EventOnSunrise(
-                                        title: title,
-                                        minutes: minutes,
+                                    setState(() {
+                                      _sunriseEventList.add(
+                                        EventOnSunrise(
+                                          title: title,
+                                          minutes: minutes,
+                                        ),
+                                      );
+                                    });
+                                    AwesomeNotifications().createNotification(
+                                      content: NotificationContent(
+                                        id: 11,
+                                        channelKey: 'basic_channel',
+                                        title: 'Sunrise Event Added!',
+                                        body: 'A new sunrise event "$title" has been added.',
                                       ),
                                     );
-                                  });
-                                  Navigator.of(context).pop();
-                                }
-                              },
-                              child: const Text('Add'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                  child: const Text('Add Sunrise Event'),
-                ),
+                                    Navigator.of(context).pop();
+                                  }
+                                },
+                                child: const Text('Add'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    child: const Text('Add Sunrise Event'),
+                  ),
                 const SizedBox(width: 16),
                 ElevatedButton(
                   onPressed: () {
@@ -386,6 +410,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                       ),
                                     );
                                   });
+                                  AwesomeNotifications().createNotification(
+                                    content: NotificationContent(
+                                      id: 12,
+                                      channelKey: 'basic_channel',
+                                      title: 'Sunset Event Added!',
+                                      body: 'A new sunset event "$title" has been added.',
+                                    ),
+                                  );
                                   Navigator.of(context).pop();
                                 }
                               },
@@ -399,6 +431,19 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: const Text('Add Sunset Event'),
                 ),
               ],
+            ),
+            ElevatedButton(
+              onPressed: () {
+                AwesomeNotifications().createNotification(
+                  content: NotificationContent(
+                    id: 10,
+                    channelKey: 'basic_channel',
+                    title: 'Hello from Sundial!',
+                    body: 'This is a test notification.',
+                  ),
+                );
+              },
+              child: const Text('Show Notification'),
             ),
             const SizedBox(height: 48),
           ],
