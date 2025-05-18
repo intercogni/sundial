@@ -1,4 +1,8 @@
-> ⚠️ ⚠️ ⚠️ **Notice for ITS EF4601 Mobile Programming Graders** ⚠️ ⚠️ ⚠️
+<img src="./docs/banner.png" alt="banner" width="100%" />
+
+<br>
+
+> ⚠️ ⚠️ **Notice for ITS Mobile Programming Graders** 
 > please make sure that you are referring to ***one of the branches below*** and their respective commits for grading, as the ***main branch includes latest commits*** to the app, ***including updates done after assignment deadline/s.***
 
 - **Section 5, 25 Mar 2025:** `s05`
