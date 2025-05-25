@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'solar_api.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,6 +32,29 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final List<EventOnSunrise> _sunriseEventList = [];
   final List<EventOnSunset> _sunsetEventList = [];
+
+  String? _sunriseTime;
+  String? _sunsetTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _solarEvents();
+  }
+
+  Future<void> _solarEvents() async {
+    final result = await SolarApi.fetchSunriseSunset(-7.2575, 112.7521);
+    if (result != null) {
+      final sunriseUtc = DateTime.parse(result['results']['sunrise']).toLocal();
+      final sunsetUtc = DateTime.parse(result['results']['sunset']).toLocal();
+      setState(() {
+        _sunriseTime = DateFormat.Hm().format(sunriseUtc);
+        _sunsetTime = DateFormat.Hm().format(sunsetUtc);
+      });
+    } else {
+      print("Failed to fetch solar event data");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +98,13 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const SizedBox(height: 32),
+            if (_sunriseTime != null && _sunsetTime != null)
+              Column(
+                children: [
+                  Text("Sunrise: $_sunriseTime"),
+                  Text("Sunset: $_sunsetTime"),
+                ],
+              ),
 
             Expanded(
               child: ListView.builder(
