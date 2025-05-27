@@ -18,3 +18,7 @@ dev_dependencies:
   flutter_lints: ^5.0.0
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/gradient_background.jpeg
+    - assets/images/gradient_background.jpg
+    - assets/icon/logograph.png
