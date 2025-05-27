@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36" version="27.0.9">
   <diagram name="Page-1" id="e7e014a7-5840-1c2e-5031-d8a46d1fe8dd">
-    <mxGraphModel dx="1218" dy="1333" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="826" background="none" math="0" shadow="0">
+    <mxGraphModel dx="1828" dy="2000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="826" background="none" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -56,6 +56,9 @@
         </mxCell>
         <mxCell id="wfOAE3RqSX7rviCucKHK-96" value="" style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#ff0000;" vertex="1" parent="2">
           <mxGeometry x="130.5" y="1272" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wfOAE3RqSX7rviCucKHK-98" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="2" source="wfOAE3RqSX7rviCucKHK-96" target="wfOAE3RqSX7rviCucKHK-96">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="3" value="State Management (ViewModel)" style="swimlane;whiteSpace=wrap" parent="1" vertex="1">
           <mxGeometry x="444" y="128" width="280" height="1322" as="geometry" />
