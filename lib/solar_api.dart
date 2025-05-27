@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class SolarApi {
@@ -6,22 +8,43 @@ class SolarApi {
     double latitude,
     double longitude,
   ) async {
-    final String apiUrl =
-        'https://api.sunrise-sunset.org/json?lat=$latitude&lng=$longitude&formatted=0';
-    print('Request sunrise-sunset for lat=$latitude, lng=$longitude');
+    log('Request sunrise-sunset for lat=$latitude, lng=$longitude');
+    return compute(_fetchSunriseSunset, {
+      'latitude': latitude,
+      'longitude': longitude,
+    });
+  }
+}
 
-    try {
-      final response = await http.get(Uri.parse(apiUrl));
-      if (response.statusCode == 200) {
+Future<Map<String, dynamic>?> _fetchSunriseSunset(
+  Map<String, dynamic> params,
+) async {
+  final double latitude = params['latitude'];
+  final double longitude = params['longitude'];
+  final String apiUrl =
+      'https://api.sunrise-sunset.org/json?lat=$latitude&lng=$longitude&formatted=0';
+
+  try {
+    log("HTTP ask");
+    final response = await http.get(Uri.parse(apiUrl));
+    log('Response status code: ${response.statusCode}');
+    log('Response headers: ${response.headers}');
+    if (response.statusCode == 200) {
+      log('Raw response body: ${response.body}');
+      try {
         final data = json.decode(response.body);
+        log("HTTP Success");
         return data;
-      } else {
-        print("HTTP error: ${response.statusCode}");
+      } catch (e) {
+        log("JSON decoding error: $e");
         return null;
       }
-    } catch (e) {
-      print("Fetch error: $e");
+    } else {
+      log("HTTP error: ${response.statusCode}");
       return null;
     }
+  } catch (e) {
+    log("Fetch error: $e");
+    return null;
   }
 }
