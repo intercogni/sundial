@@ -22,3 +22,26 @@ flutter:
     - assets/images/gradient_background.jpeg
     - assets/images/gradient_background.jpg
     - assets/icon/logograph.png
+  fonts:
+    - family: GothamRounded
+      fonts:
+        - asset: fonts/gotham-rounded/gothamrnd_bold.otf
+          weight: 700
+        - asset: fonts/gotham-rounded/gothamrnd_bolditalic.otf
+          style: italic
+          weight: 700
+        - asset: fonts/gotham-rounded/gothamrnd_book.otf
+          weight: 400
+        - asset: fonts/gotham-rounded/gothamrnd_bookitalic.otf
+          style: italic
+          weight: 400
+        - asset: fonts/gotham-rounded/gothamrnd_light.otf
+          weight: 300
+        - asset: fonts/gotham-rounded/gothamrnd_lightitalic.otf
+          style: italic
+          weight: 300
+        - asset: fonts/gotham-rounded/gothamrnd_medium.otf
+          weight: 500
+        - asset: fonts/gotham-rounded/gothamrnd_mediumitalic.otf
+          style: italic
+          weight: 500

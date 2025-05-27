@@ -1,28 +1,37 @@
 import 'package:flutter/material.dart';
 
-import 'package:sundial/screens/home.dart';
+import 'package:sundial/widgets/bottom_tab.dart';
+import 'package:flutter/material.dart';
+import 'constants.dart';
 
 void main() {
   runApp(const SundialApp());
 }
 
 class SundialApp extends StatelessWidget {
-  const SundialApp({super.key});
+  const SundialApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Sundial',
       theme: ThemeData(
+        fontFamily: 'GothamRounded',
+        brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 195, 28, 28),
+          seedColor: const Color.fromARGB(255, 125, 161, 209),
+          brightness: Brightness.dark,
+          primary: const Color.fromARGB(255, 137, 172, 218),
+          secondary: const Color.fromARGB(
+            255,
+            178,
+            246,
+            255,
+          ), // Pastel Orange AccentR
         ),
+        useMaterial3: true,
       ),
-      initialRoute: 'home',
-      routes: {
-        'home': (context) => const HomeScreen(title: 'Sundial Home Screen'),
-        // 'login': (context) => const LoginScreen(),
-        // 'register': (context) => const RegisterScreen(),
-      },
+      home: const BottomTab(),
     );
   }
 }
