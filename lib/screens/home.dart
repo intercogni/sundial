@@ -20,6 +20,40 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _solarEvents();
+  }
+
+  Future<void> _solarEvents() async {
+    log("Awaiting solar event data");
+    final result = await SolarApi.fetchSolar(-7.2575, 112.7521);
+    log("Notice from solar event data");
+    if (result != null) {
+      final parsed = result['parsed'] as Map<String, DateTime>;
+      setState(() {
+        final sunrise = DateFormat.Hm().format(parsed['sunrise']!);
+        final sunset = DateFormat.Hm().format(parsed['sunset']!);
+        final solarNoon = DateFormat.Hm().format(parsed['solar_noon']!);
+        final civilBegin = DateFormat.Hm().format(
+          parsed['civil_twilight_begin']!,
+        );
+        final civilEnd = DateFormat.Hm().format(parsed['civil_twilight_end']!);
+        final nauticalBegin = DateFormat.Hm().format(
+          parsed['nautical_twilight_begin']!,
+        );
+        final nauticalEnd = DateFormat.Hm().format(
+          parsed['nautical_twilight_end']!,
+        );
+        final astroBegin = DateFormat.Hm().format(
+          parsed['astronomical_twilight_begin']!,
+        );
+        final astroEnd = DateFormat.Hm().format(
+          parsed['astronomical_twilight_end']!,
+        );
+      });
+      log("Successfully fetched solar event data");
+    } else {
+      log("Failed to fetch solar event data");
+    }
   }
 
   @override
@@ -69,13 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            if (solarData.sunrise != null && solarData.sunset != null)
-              Column(
-                children: [
-                  Text("Sunrise: ${solarData.sunrise?.format(context)}"),
-                  Text("Sunset: ${solarData.sunset?.format(context)}"),
-                ],
-              ),
+
             Expanded(
               child: ListView.builder(
                 itemCount: _sunriseEventList.length,
