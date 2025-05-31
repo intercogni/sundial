@@ -26,7 +26,10 @@ Future<Map<String, dynamic>?> _fetchSolar(Map<String, dynamic> params) async {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       log('Raw response body: ${response.body}');
-      if (data['status'] != 'OK') return null;
+      if (data['status'] != 'OK') {
+        log('API returned an error status: ${data['status']}');
+        return null;
+      }
       final results = data['results'];
       final Map<String, DateTime> solarEvents = {};
       for (final key in results.keys) {
@@ -37,14 +40,14 @@ Future<Map<String, dynamic>?> _fetchSolar(Map<String, dynamic> params) async {
             solarEvents[key] = parsedTime;
             log("Parsed [$key]: $parsedTime");
           } catch (e) {
-            log("Failed to parse [$key]: $value");
+            log("Failed to parse [$key]: $value. Error: $e");
           }
         }
       }
       log("Solar event map: $solarEvents");
       return {'results': results, 'parsed': solarEvents};
     } else {
-      log("Failed to fetch data: ${response.statusCode}");
+      log("Failed to fetch data: ${response.statusCode}. Response body: ${response.body}");
       return null;
     }
   } catch (e) {

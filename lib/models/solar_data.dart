@@ -29,7 +29,7 @@ class SolarData extends ChangeNotifier {
 
   Future<void> _solarEvents() async {
     log("Awaiting solar event data");
-    final result = await SolarApi.fetchSunriseSunset(-7.2575, 112.7521);
+    final result = await SolarApi.fetchSolar(-7.2575, 112.7521);
     log("Notice from solar event data");
     if (result != null) {
       final results = result['results'];
