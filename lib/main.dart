@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
+import 'package:sundial/models/solar_data.dart';
 import 'package:sundial/widgets/bottom_tab.dart';
-import 'package:flutter/material.dart';
-import 'constants.dart';
 
 void main() {
-  runApp(const SundialApp());
+  SolarData();
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => SolarData(),
+      child: const SundialApp(),
+    ),
+  );
 }
 
 class SundialApp extends StatelessWidget {
@@ -17,11 +22,11 @@ class SundialApp extends StatelessWidget {
       title: 'Sundial',
       theme: ThemeData(
         fontFamily: 'GothamRounded',
-        brightness: Brightness.dark,
+        brightness: Brightness.light,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 125, 161, 209),
-          brightness: Brightness.dark,
-          primary: const Color.fromARGB(255, 137, 172, 218),
+          seedColor: const Color(0xFF1E3F05),
+          brightness: Brightness.light,
+          primary: const Color(0xFF1E3F05),
           secondary: const Color.fromARGB(
             255,
             178,
