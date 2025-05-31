@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class TimesScreen extends StatelessWidget {
-  const TimesScreen({Key? key}) : super(key: key);
+  const TimesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

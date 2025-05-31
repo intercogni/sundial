@@ -5,7 +5,7 @@ import 'package:sundial/screens/times.dart';
 import 'package:sundial/screens/account.dart';
 
 class BottomTab extends StatefulWidget {
-  const BottomTab({Key? key}) : super(key: key);
+  const BottomTab({super.key});
 
   @override
   _BottomTabState createState() => _BottomTabState();

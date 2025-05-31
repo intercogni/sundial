@@ -14,7 +14,7 @@ void main() {
 }
 
 class SundialApp extends StatelessWidget {
-  const SundialApp({Key? key}) : super(key: key);
+  const SundialApp({super.key});
 
   @override
   Widget build(BuildContext context) {
