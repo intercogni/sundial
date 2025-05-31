@@ -26,14 +26,30 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _solarEvents() async {
     log("Awaiting solar event data");
-    final result = await SolarApi.fetchSunriseSunset(-7.2575, 112.7521);
+    final result = await SolarApi.fetchSolar(-7.2575, 112.7521);
     log("Notice from solar event data");
     if (result != null) {
-      final sunriseUtc = DateTime.parse(result['results']['sunrise']).toLocal();
-      final sunsetUtc = DateTime.parse(result['results']['sunset']).toLocal();
+      final parsed = result['parsed'] as Map<String, DateTime>;
       setState(() {
-        sunriseTime = DateFormat.Hm().format(sunriseUtc);
-        sunsetTime = DateFormat.Hm().format(sunsetUtc);
+        final sunrise = DateFormat.Hm().format(parsed['sunrise']!);
+        final sunset = DateFormat.Hm().format(parsed['sunset']!);
+        final solarNoon = DateFormat.Hm().format(parsed['solar_noon']!);
+        final civilBegin = DateFormat.Hm().format(
+          parsed['civil_twilight_begin']!,
+        );
+        final civilEnd = DateFormat.Hm().format(parsed['civil_twilight_end']!);
+        final nauticalBegin = DateFormat.Hm().format(
+          parsed['nautical_twilight_begin']!,
+        );
+        final nauticalEnd = DateFormat.Hm().format(
+          parsed['nautical_twilight_end']!,
+        );
+        final astroBegin = DateFormat.Hm().format(
+          parsed['astronomical_twilight_begin']!,
+        );
+        final astroEnd = DateFormat.Hm().format(
+          parsed['astronomical_twilight_end']!,
+        );
       });
       log("Successfully fetched solar event data");
     } else {
@@ -86,13 +102,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            if (sunriseTime != null && sunsetTime != null)
-              Column(
-                children: [
-                  Text("Sunrise: $sunriseTime"),
-                  Text("Sunset: $sunsetTime"),
-                ],
-              ),
 
             Expanded(
               child: ListView.builder(
