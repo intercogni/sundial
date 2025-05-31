@@ -47,8 +47,8 @@ class _BottomTabState extends State<BottomTab> {
             ),
           ],
           currentIndex: _selectedIndex,
-          selectedItemColor: const Color(0xFFFFE5B4), // Pastel muted orange
-          unselectedItemColor: const Color(0xFFFFFDD0), // Pastel light cream
+          selectedItemColor: const Color.fromARGB(255, 109, 99, 80), // Pastel muted orange
+          unselectedItemColor: const Color(0xFF1E3F05), // Pastel light cream
           type:
               BottomNavigationBarType
                   .fixed, // This will prevent icon size change

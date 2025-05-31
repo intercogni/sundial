@@ -3,9 +3,8 @@ import 'package:intl/intl.dart';
 import 'dart:developer';
 
 import 'package:sundial/functions/solar_api.dart';
-
-String? sunriseTime;
-String? sunsetTime;
+import 'package:provider/provider.dart';
+import 'package:sundial/models/solar_data.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, required this.title});
@@ -21,28 +20,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _solarEvents();
-  }
-
-  Future<void> _solarEvents() async {
-    log("Awaiting solar event data");
-    final result = await SolarApi.fetchSunriseSunset(-7.2575, 112.7521);
-    log("Notice from solar event data");
-    if (result != null) {
-      final sunriseUtc = DateTime.parse(result['results']['sunrise']).toLocal();
-      final sunsetUtc = DateTime.parse(result['results']['sunset']).toLocal();
-      setState(() {
-        sunriseTime = DateFormat.Hm().format(sunriseUtc);
-        sunsetTime = DateFormat.Hm().format(sunsetUtc);
-      });
-      log("Successfully fetched solar event data");
-    } else {
-      log("Failed to fetch solar event data");
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final solarData = Provider.of<SolarData>(context);
+
     return Scaffold(
       body: Center(
         child: Column(
@@ -86,14 +69,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            if (sunriseTime != null && sunsetTime != null)
+            if (solarData.sunrise != null && solarData.sunset != null)
               Column(
                 children: [
-                  Text("Sunrise: $sunriseTime"),
-                  Text("Sunset: $sunsetTime"),
+                  Text("Sunrise: ${solarData.sunrise?.format(context)}"),
+                  Text("Sunset: ${solarData.sunset?.format(context)}"),
                 ],
               ),
-
             Expanded(
               child: ListView.builder(
                 itemCount: _sunriseEventList.length,
@@ -188,7 +170,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-
             Expanded(
               child: ListView.builder(
                 itemCount: _sunsetEventList.length,
@@ -283,7 +264,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               ),
             ),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -441,6 +421,8 @@ class EventOnSunrise extends StatefulWidget {
 class _EventOnSunriseState extends State<EventOnSunrise> {
   @override
   Widget build(BuildContext context) {
+    final solarData = Provider.of<SolarData>(context);
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
@@ -474,7 +456,7 @@ class _EventOnSunriseState extends State<EventOnSunrise> {
                   : '${widget.minutes} minutes after sunrise!',
               style: Theme.of(context).textTheme.bodyLarge,
             ),
-            Text("Sunrise: $sunriseTime"),
+            Text("Sunrise: ${solarData.sunrise?.format(context)}"),
           ],
         ),
       ),
