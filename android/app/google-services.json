@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "911946002579",
+    "project_id": "fp-ppb-iup",
+    "storage_bucket": "fp-ppb-iup.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:911946002579:android:7244793e81ef8b9f86dd66",
+        "android_client_info": {
+          "package_name": "com.example.sundial"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "911946002579-5k9ucahf7b23hpp944s5obloukvis1up.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.sundial",
+            "certificate_hash": "91d752d26ec59845ca2a56c244777b1d987abef6"
+          }
+        },
+        {
+          "client_id": "911946002579-dghqi57cvg3ikboqkuq3ams4ie6ib822.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBCmWuCN2yUdEVcXKafpliamWyjvYSYNd8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "911946002579-dghqi57cvg3ikboqkuq3ams4ie6ib822.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "911946002579-habm7agcaopt32rf1mmroq2k4do0ieup.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.sundial"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -2,8 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sundial/models/solar_data.dart';
 import 'package:sundial/widgets/bottom_tab.dart';
+import 'package:sundial/screens/login_screen.dart';
+import 'package:sundial/screens/register_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   SolarData();
   runApp(
     ChangeNotifierProvider(
@@ -36,7 +44,12 @@ class SundialApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const BottomTab(),
+      initialRoute: '/login',
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
+        '/home': (context) => const BottomTab(),
+      },
     );
   }
 }
