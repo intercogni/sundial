@@ -45,10 +45,45 @@ class SundialApp extends StatelessWidget {
         useMaterial3: true,
       ),
       initialRoute: '/login',
-      routes: {
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegisterScreen(),
-        '/home': (context) => const BottomTab(),
+      onGenerateRoute: (settings) {
+        WidgetBuilder builder;
+        switch (settings.name) {
+          case '/login':
+            builder = (BuildContext _) => const LoginScreen();
+            break;
+          case '/register':
+            builder = (BuildContext _) => const RegisterScreen();
+            break;
+          case '/home':
+            builder = (BuildContext _) => const BottomTab();
+            break;
+          default:
+            throw Exception('Invalid route: ${settings.name}');
+        }
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => builder(context),
+          transitionDuration: const Duration(milliseconds: 333), // Make animation faster
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(0.0, 1.0); // Start from top
+            const end = Offset.zero;
+            const curve = Curves.ease;
+
+            var slideTween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            var scaleTween = Tween(begin: 0.8, end: 1.0).chain(CurveTween(curve: curve));
+
+            return SlideTransition(
+              position: animation.drive(slideTween),
+              child: ScaleTransition(
+                scale: animation.drive(scaleTween),
+                child: FadeTransition(
+                  opacity: CurvedAnimation(parent: animation, curve: Curves.easeIn), // Slight fade in
+                  child: child,
+                ),
+              ),
+            );
+          },
+          settings: settings,
+        );
       },
     );
   }
