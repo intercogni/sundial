@@ -20,19 +20,21 @@ class SundialDivider extends StatelessWidget {
                 child: Text(
                   label,
                   style: const TextStyle(
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w700,
                     fontSize: 12.0,
+                    color: Colors.white,
                   ),
                 ),
               ),
-              Expanded(child: Divider()),
+              Expanded(child: Divider(color: Colors.white, thickness: 1.5)),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 8.0),
                 child: Text(
                   '${time.hour.toString()}:${time.minute.toString().padLeft(2, '0')}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w400,
+                    style: const TextStyle(
+                    fontWeight: FontWeight.w500,
                     fontSize: 12.0,
+                    color: Colors.white,
                   ),
                 ),
               ),

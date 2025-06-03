@@ -30,10 +30,10 @@ class SundialApp extends StatelessWidget {
       title: 'Sundial',
       theme: ThemeData(
         fontFamily: 'GothamRounded',
-        brightness: Brightness.light,
+        brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF1E3F05),
-          brightness: Brightness.light,
+          brightness: Brightness.dark,
           primary: const Color(0xFF1E3F05),
           secondary: const Color.fromARGB(
             255,
@@ -44,10 +44,11 @@ class SundialApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      initialRoute: '/login',
+      initialRoute: '/register',
       onGenerateRoute: (settings) {
         WidgetBuilder builder;
         switch (settings.name) {
+          case '/':
           case '/login':
             builder = (BuildContext _) => const LoginScreen();
             break;

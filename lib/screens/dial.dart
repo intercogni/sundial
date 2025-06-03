@@ -7,6 +7,36 @@ import 'package:sundial/classes/sundial.dart';
 import 'package:sundial/functions/sundial.dart';
 import 'dart:ui';
 
+class Glassmorphism extends StatelessWidget {
+  final double blur;
+  final double opacity;
+  final Widget child;
+
+  const Glassmorphism({
+    Key? key,
+    required this.blur,
+    required this.opacity,
+    required this.child,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(opacity),
+          borderRadius: const BorderRadius.all(Radius.circular(20)),
+          border: Border.all(
+            width: 1.5,
+            color: Colors.white.withOpacity(0.2),
+          ),
+        ),
+        child: child,
+      ),
+    );
+  }
+}
+
 class DialScreen extends StatefulWidget {
   const DialScreen({Key? key}) : super(key: key);
 
@@ -121,47 +151,66 @@ class _DialScreenState extends State<DialScreen> {
     _sortTasks(solarData); // Sort tasks whenever solar data changes
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 252, 255, 243),
-      body: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children:[ 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children:[
-                  Text(
-                    'Tasks',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xFF1E3F05),
-                      fontSize: 48.0,
-                    ),
-                    textAlign: TextAlign.center,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF13162B),
+              Color(0xFF3A4058),
+            ],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Tasks',
+                      style: TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                     FloatingActionButton(
-                    onPressed: () {
-                      _showAddDialog(context);
-                    },
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    child: const Icon(
-                      Icons.add_circle,
-                      color: Color(0xFF1E3F05),
-                      size: 36, // Increased icon size
+                      onPressed: () {
+                        _showAddDialog(context);
+                      },
+                      backgroundColor: Colors.transparent,
+                      elevation: 0,
+                      child: const Icon(
+                        Icons.add_circle,
+                        color: Colors.white,
+                        size: 36,
+                      ),
                     ),
-                  ),
-                ]
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: tasks.length,
-                itemBuilder: (context, index) {
-                  if (index >= tasks.length) {
-                    return const SizedBox.shrink();
-                  }
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Glassmorphism(
+                    blur: 10,
+                    opacity: 0.2,
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      child: ListView.builder(
+                        shrinkWrap: true, // Important for nested ListView
+                        physics: const NeverScrollableScrollPhysics(), // Disable scrolling for nested ListView
+                        itemCount: tasks.length,
+                        itemBuilder: (context, index) {
+                          if (index >= tasks.length) {
+                            return const SizedBox.shrink();
+                          }
 
                   final task = tasks[index];
                   final taskTime = _getTaskTime(task, solarData);
@@ -211,62 +260,63 @@ class _DialScreenState extends State<DialScreen> {
                   }
 
 
-                  return Container(
-                    constraints: BoxConstraints(
-                      minHeight: MediaQuery.of(context).size.height * 0,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.transparent,
-                      border: Border.all(
-                        color: Colors.transparent,
-                        width: 0,
-                      ),
-                      // borderRadius: BorderRadius.circular(32.0),
-                    ),
-                    // margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 18.0),
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
                       if (divider != null) divider,
                       if (index == tasks.length - 1)
                         const SizedBox.shrink()
                       else
                         ListTile(
-                        title: Text(task.title),
-                        subtitle: Text(
-                          '${task.description} - $timeText',
-                        ),
-                        trailing: PopupMenuButton(
-                          itemBuilder: (context) => [
-                          const PopupMenuItem(
-                            value: 'update',
-                            child: Text('Update'),
+                          title: Text(
+                            task.title,
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                           ),
-                          const PopupMenuItem(
-                            value: 'delete',
-                            child: Text('Delete'),
+                          subtitle: Text(
+                            '${task.description} - $timeText',
+                            style: const TextStyle(color: Colors.white70),
                           ),
-                          ],
-                          onSelected: (value) {
-                          if (value == 'update') {
-                            _showUpdateDialog(context, index);
-                          } else if (value == 'delete') {
-                            _deleteTask(index);
-                          }
-                          },
+                          trailing: PopupMenuButton(
+                            icon: const Icon(Icons.more_vert, color: Colors.white),
+                            itemBuilder: (context) => [
+                              PopupMenuItem(
+                                value: 'update',
+                                child: Text(
+                                  'Update',
+                                  style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 'delete',
+                                child: Text(
+                                  'Delete',
+                                  style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+                                ),
+                              ),
+                            ],
+                            onSelected: (value) {
+                              if (value == 'update') {
+                                _showUpdateDialog(context, index);
+                              } else if (value == 'delete') {
+                                _deleteTask(index);
+                              }
+                            },
+                          ),
                         ),
-                        ),
-                      ],
-                    ),
+                    ],
                   );
-                },
+                        },
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),]
+            ],
           ),
         ),
-      );
-    }
+      ),
+    );
+  }
 
   Future<void> _showAddDialog(BuildContext context) async {
     String title = '';
@@ -283,70 +333,97 @@ class _DialScreenState extends State<DialScreen> {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: AlertDialog(
-            backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-            title: const Text(
-              'add task',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF1E3F05),
-                fontSize: 28.0,
+            backgroundColor: Colors.white.withOpacity(0.1), // Semi-transparent background
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(
+                width: 1.5,
+                color: Colors.white.withOpacity(0.2),
               ),
             ),
-            content: StatefulBuilder( // Use StatefulBuilder to update dialog content
+            title: const Text(
+              'add task',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            content: StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(32.0),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-                        child: ToggleButtons(
-                          isSelected: [!isRelative, isRelative],
-                          onPressed: (int index) {
-                            setState(() {
-                              isRelative = index == 1;
-                            });
-                          },
-                          color: const Color(0xFF1E3F05), // Text color for unselected
-                          selectedColor: Colors.white, // Text color for selected
-                          fillColor: const Color(0xFF1E3F05).withOpacity(0.7), // Background color for selected
-                          borderColor: const Color(0xFF1E3F05).withOpacity(0.5), // Border color
-                          selectedBorderColor: const Color(0xFF1E3F05), // Border color for selected
-                          borderRadius: BorderRadius.circular(15.0),
-                          children: const <Widget>[
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16.0),
-                              child: Text(
-                                'fixed',
-                                style: TextStyle(fontWeight: FontWeight.w500),
-                              ),
+                      borderRadius: BorderRadius.circular(15.0),
+                      child: ToggleButtons(
+                        isSelected: [!isRelative, isRelative],
+                        onPressed: (int index) {
+                          setState(() {
+                            isRelative = index == 1;
+                          });
+                        },
+                        color: Colors.white, // Text color for unselected
+                        selectedColor: Colors.white, // Text color for selected
+                        fillColor: Colors.white.withOpacity(0.3), // Background color for selected
+                        borderColor: Colors.white.withOpacity(0.5), // Border color
+                        selectedBorderColor: Colors.white, // Border color for selected
+                        borderRadius: BorderRadius.circular(15.0),
+                        children: const <Widget>[
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Text(
+                              'fixed',
+                              style: TextStyle(fontWeight: FontWeight.w500),
                             ),
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16.0),
-                              child: Text(
-                                'relative',
-                                style: TextStyle(fontWeight: FontWeight.w500),
-                              ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Text(
+                              'relative',
+                              style: TextStyle(fontWeight: FontWeight.w500),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 20), // Add some spacing
+                    const SizedBox(height: 20),
                     TextField(
-                      decoration: const InputDecoration(labelText: 'title'),
+                      decoration: InputDecoration(
+                        labelText: 'title',
+                        labelStyle: const TextStyle(color: Colors.white),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.3),
+                      ),
+                      style: const TextStyle(color: Colors.white),
                       onChanged: (value) {
                         title = value;
                       },
                     ),
+                    const SizedBox(height: 10),
                     TextField(
-                      decoration: const InputDecoration(labelText: 'description'),
+                      decoration: InputDecoration(
+                        labelText: 'description',
+                        labelStyle: const TextStyle(color: Colors.white),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.3),
+                      ),
+                      style: const TextStyle(color: Colors.white),
                       onChanged: (value) {
                         description = value;
                       },
                     ),
-                    if (!isRelative) // Show time picker for fixed time
+                    const SizedBox(height: 20),
+                    if (!isRelative)
                       ElevatedButton(
                         onPressed: () async {
                           final selectedTime = await showTimePicker(
@@ -359,16 +436,36 @@ class _DialScreenState extends State<DialScreen> {
                             });
                           }
                         },
-                        child: Text(time == null ? 'Select Time' : time!.format(context)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green.shade300,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(64),
+                          ),
+                        ),
+                        child: Text(
+                          time == null ? 'Select Time' : time!.format(context),
+                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
                       ),
-                    if (isRelative) // Show relative time inputs
+                    if (isRelative)
                       Column(
                         children: [
                           DropdownButtonFormField<String>(
-                            decoration: const InputDecoration(labelText: 'Solar Event'),
+                            decoration: InputDecoration(
+                              labelText: 'Solar Event',
+                              labelStyle: const TextStyle(color: Colors.white),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                              filled: true,
+                              fillColor: Colors.white.withOpacity(0.3),
+                            ),
+                            style: const TextStyle(color: Colors.white),
                             value: solarEvent,
                             items: ['first light', 'dusk', 'sunrise', 'noon', 'sunset', 'last light', 'night']
-                                .map((event) => DropdownMenuItem(value: event, child: Text(event)))
+                                .map((event) => DropdownMenuItem(value: event, child: Text(event, style: const TextStyle(color: Colors.white)))) // Dropdown item text color
                                 .toList(),
                             onChanged: (value) {
                               setState(() {
@@ -376,8 +473,19 @@ class _DialScreenState extends State<DialScreen> {
                               });
                             },
                           ),
+                          const SizedBox(height: 10),
                           TextField(
-                            decoration: const InputDecoration(labelText: 'Offset in Minutes'),
+                            decoration: InputDecoration(
+                              labelText: 'Offset in Minutes',
+                              labelStyle: const TextStyle(color: Colors.white),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                              filled: true,
+                              fillColor: Colors.white.withOpacity(0.3),
+                            ),
+                            style: const TextStyle(color: Colors.white),
                             keyboardType: TextInputType.number,
                             onChanged: (value) {
                               offsetMinutes = int.tryParse(value);
@@ -394,7 +502,10 @@ class _DialScreenState extends State<DialScreen> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: const Text('Cancel'),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -405,14 +516,24 @@ class _DialScreenState extends State<DialScreen> {
                       );
                       Navigator.pop(context);
                     } else if (isRelative && solarEvent != null && offsetMinutes != null) {
-                       _addTask(
+                      _addTask(
                         Task(title: title, description: description, isRelative: true, solarEvent: solarEvent, offsetMinutes: offsetMinutes),
                       );
                       Navigator.pop(context);
                     }
                   }
                 },
-                child: const Text('Add'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green.shade300,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(64),
+                  ),
+                ),
+                child: const Text(
+                  'Add',
+                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
@@ -436,77 +557,104 @@ class _DialScreenState extends State<DialScreen> {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: AlertDialog(
-            backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-            title: const Text(
-              'update task',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF1E3F05),
-                fontSize: 28.0,
+            backgroundColor: Colors.white.withOpacity(0.1), // Semi-transparent background
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(
+                width: 1.5,
+                color: Colors.white.withOpacity(0.2),
               ),
             ),
-            content: StatefulBuilder( // Use StatefulBuilder to update dialog content
+            title: const Text(
+              'update task',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            content: StatefulBuilder(
               builder: (BuildContext context, StateSetter setState) {
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     TextField(
-                      decoration: const InputDecoration(labelText: 'title'),
+                      decoration: InputDecoration(
+                        labelText: 'title',
+                        labelStyle: const TextStyle(color: Colors.white),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.3),
+                      ),
+                      style: const TextStyle(color: Colors.white),
                       onChanged: (value) {
                         title = value;
                       },
                       controller: TextEditingController(text: title),
                     ),
+                    const SizedBox(height: 10),
                     TextField(
-                      decoration: const InputDecoration(labelText: 'description'),
+                      decoration: InputDecoration(
+                        labelText: 'description',
+                        labelStyle: const TextStyle(color: Colors.white),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.3),
+                      ),
+                      style: const TextStyle(color: Colors.white),
                       onChanged: (value) {
                         description = value;
                       },
                       controller: TextEditingController(text: description),
                     ),
+                    const SizedBox(height: 20),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(15.0),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                        child: ToggleButtons(
-                          isSelected: [!isRelative, isRelative],
-                          onPressed: (int index) {
-                            setState(() {
-                              isRelative = index == 1;
-                            });
-                          },
-                          color: const Color(0xFF1E3F05), // Text color for unselected
-                          selectedColor: Colors.white, // Text color for selected
-                          fillColor: const Color(0xFF1E3F05).withOpacity(0.7), // Background color for selected
-                          borderColor: const Color(0xFF1E3F05).withOpacity(0.5), // Border color
-                          selectedBorderColor: const Color(0xFF1E3F05), // Border color for selected
-                          borderRadius: BorderRadius.circular(15.0),
-                          children: const <Widget>[
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16.0),
-                              child: Text(
-                                'Fixed Time',
-                                style: TextStyle(fontWeight: FontWeight.w500),
-                              ),
+                      child: ToggleButtons(
+                        isSelected: [!isRelative, isRelative],
+                        onPressed: (int index) {
+                          setState(() {
+                            isRelative = index == 1;
+                          });
+                        },
+                        color: Colors.white, // Text color for unselected
+                        selectedColor: Colors.white, // Text color for selected
+                        fillColor: Colors.white.withOpacity(0.3), // Background color for selected
+                        borderColor: Colors.white.withOpacity(0.5), // Border color
+                        selectedBorderColor: Colors.white, // Border color for selected
+                        borderRadius: BorderRadius.circular(15.0),
+                        children: const <Widget>[
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Text(
+                              'Fixed Time',
+                              style: TextStyle(fontWeight: FontWeight.w500),
                             ),
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16.0),
-                              child: Text(
-                                'Relative Time',
-                                style: TextStyle(fontWeight: FontWeight.w500),
-                              ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Text(
+                              'Relative Time',
+                              style: TextStyle(fontWeight: FontWeight.w500),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 20), // Add some spacing
-                    if (!isRelative) // Show time picker for fixed time
+                    const SizedBox(height: 20),
+                    if (!isRelative)
                       ElevatedButton(
                         onPressed: () async {
                           final selectedTime = await showTimePicker(
                             context: context,
-                            initialTime: time ?? TimeOfDay.now(), // Use existing time or now
+                            initialTime: time ?? TimeOfDay.now(),
                           );
                           if (selectedTime != null) {
                             setState(() {
@@ -514,16 +662,36 @@ class _DialScreenState extends State<DialScreen> {
                             });
                           }
                         },
-                        child: Text(time == null ? 'Select Time' : time!.format(context)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green.shade300,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(64),
+                          ),
+                        ),
+                        child: Text(
+                          time == null ? 'Select Time' : time!.format(context),
+                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
                       ),
-                    if (isRelative) // Show relative time inputs
+                    if (isRelative)
                       Column(
                         children: [
                           DropdownButtonFormField<String>(
-                            decoration: const InputDecoration(labelText: 'Solar Event'),
+                            decoration: InputDecoration(
+                              labelText: 'Solar Event',
+                              labelStyle: const TextStyle(color: Colors.white),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                              filled: true,
+                              fillColor: Colors.white.withOpacity(0.3),
+                            ),
+                            style: const TextStyle(color: Colors.white),
                             value: solarEvent,
                             items: ['sunrise', 'sunset', 'solarNoon', 'astronomicalTwilightBegin', 'nauticalTwilightBegin', 'civilTwilightBegin', 'civilTwilightEnd', 'nauticalTwilightEnd', 'astronomicalTwilightEnd']
-                                .map((event) => DropdownMenuItem(value: event, child: Text(event)))
+                                .map((event) => DropdownMenuItem(value: event, child: Text(event, style: const TextStyle(color: Colors.black))))
                                 .toList(),
                             onChanged: (value) {
                               setState(() {
@@ -531,8 +699,19 @@ class _DialScreenState extends State<DialScreen> {
                               });
                             },
                           ),
+                          const SizedBox(height: 10),
                           TextField(
-                            decoration: const InputDecoration(labelText: 'Offset in Minutes'),
+                            decoration: InputDecoration(
+                              labelText: 'Offset in Minutes',
+                              labelStyle: const TextStyle(color: Colors.white),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
+                              ),
+                              filled: true,
+                              fillColor: Colors.white.withOpacity(0.3),
+                            ),
+                            style: const TextStyle(color: Colors.white),
                             keyboardType: TextInputType.number,
                             onChanged: (value) {
                               offsetMinutes = int.tryParse(value);
@@ -550,7 +729,10 @@ class _DialScreenState extends State<DialScreen> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: const Text('Cancel'),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -562,7 +744,7 @@ class _DialScreenState extends State<DialScreen> {
                       );
                       Navigator.pop(context);
                     } else if (isRelative && solarEvent != null && offsetMinutes != null) {
-                       _updateTask(
+                      _updateTask(
                         index,
                         Task(title: title, description: description, isRelative: true, solarEvent: solarEvent, offsetMinutes: offsetMinutes),
                       );
@@ -570,7 +752,17 @@ class _DialScreenState extends State<DialScreen> {
                     }
                   }
                 },
-                child: const Text('Update'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green.shade300,
+                  padding: const EdgeInsets.symmetric(vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(64),
+                  ),
+                ),
+                child: const Text(
+                  'Update',
+                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),
