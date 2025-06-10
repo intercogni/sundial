@@ -26,10 +26,6 @@ class Glassmorphism extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(opacity),
           borderRadius: const BorderRadius.all(Radius.circular(20)),
-          border: Border.all(
-            width: 1.5,
-            color: Colors.white.withOpacity(0.2),
-          ),
         ),
         child: child,
       ),
@@ -145,6 +141,22 @@ class _DialScreenState extends State<DialScreen> {
     });
   }
 
+  String _formatRepeatOptions(RepeatOptions repeatOptions) {
+    switch (repeatOptions.type) {
+      case RepeatType.daily:
+        return 'Repeats Daily';
+      case RepeatType.weekly:
+        final days = repeatOptions.selectedDays.map((day) {
+          return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][day - 1];
+        }).join(', ');
+        return 'Repeats Weekly on: $days';
+      case RepeatType.none:
+        return 'Does not repeat';
+      default:
+        return 'Unknown repeat type'; // Handle any unhandled cases
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final solarData = Provider.of<SolarData>(context);
@@ -197,12 +209,10 @@ class _DialScreenState extends State<DialScreen> {
               ),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Glassmorphism(
-                    blur: 10,
-                    opacity: 0.2,
+                  padding: const EdgeInsets.all(16),
+                  child: Container(
                     child: Container(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(0),
                       child: ListView.builder(
                         shrinkWrap: true, // Important for nested ListView
                         physics: const NeverScrollableScrollPhysics(), // Disable scrolling for nested ListView
@@ -214,34 +224,35 @@ class _DialScreenState extends State<DialScreen> {
 
                   final task = tasks[index];
                   final taskTime = _getTaskTime(task, solarData);
+                  final previousTaskTime = index > 0 ? _getTaskTime(tasks[index - 1], solarData) : null;
 
                   final dividers = <Widget>[];
 
-                  if (shouldDivideTask(tasks, index, solarData.astronomicalTwilightBegin!)) {
+                  if (shouldDivideTask(previousTaskTime, taskTime, solarData.astronomicalTwilightBegin!)) {
                     dividers.add(SundialDivider(time: solarData.astronomicalTwilightBegin!, label: 'first light'));
                   }
-                  if (shouldDivideTask(tasks, index, solarData.nauticalTwilightBegin!)) {
+                  if (shouldDivideTask(previousTaskTime, taskTime, solarData.nauticalTwilightBegin!)) {
                     dividers.add(SundialDivider(time: solarData.nauticalTwilightBegin!, label: 'dusk'));
                   }
-                  // if (shouldDivideTask(tasks, index, solarData.civilTwilightBegin!)) {
+                  // if (shouldDivideTask(previousTaskTime, taskTime, solarData.civilTwilightBegin!)) {
                   //   dividers.add(SundialDivider(time: solarData.civilTwilightBegin!, label: 'Dusk'));
                   // }
-                  if (shouldDivideTask(tasks, index, solarData.sunrise!)) {
+                  if (shouldDivideTask(previousTaskTime, taskTime, solarData.sunrise!)) {
                     dividers.add(SundialDivider(time: solarData.sunrise!, label: 'sunrise'));
                   }
-                  if (shouldDivideTask(tasks, index, solarData.solarNoon!)) {
+                  if (shouldDivideTask(previousTaskTime, taskTime, solarData.solarNoon!)) {
                     dividers.add(SundialDivider(time: solarData.solarNoon!, label: 'noon'));
                   }
-                  if (shouldDivideTask(tasks, index, solarData.sunset!)) {
+                  if (shouldDivideTask(previousTaskTime, taskTime, solarData.sunset!)) {
                     dividers.add(SundialDivider(time: solarData.sunset!, label: 'sunset'));
                   }
-                  // if (shouldDivideTask(tasks, index, solarData.civilTwilightEnd!)) {
+                  // if (shouldDivideTask(previousTaskTime, taskTime, solarData.civilTwilightEnd!)) {
                   //   dividers.add(SundialDivider(time: solarData.civilTwilightEnd!, label: 'Dawn Ends'));
                   // }
-                  if (shouldDivideTask(tasks, index, solarData.nauticalTwilightEnd!)) {
+                  if (shouldDivideTask(previousTaskTime, taskTime, solarData.nauticalTwilightEnd!)) {
                     dividers.add(SundialDivider(time: solarData.nauticalTwilightEnd!, label: 'last light'));
                   }
-                  if (shouldDivideTask(tasks, index, solarData.astronomicalTwilightEnd!)) {
+                  if (shouldDivideTask(previousTaskTime, taskTime, solarData.astronomicalTwilightEnd!)) {
                     dividers.add(SundialDivider(time: solarData.astronomicalTwilightEnd!, label: 'night'));
                   }
 
@@ -267,40 +278,65 @@ class _DialScreenState extends State<DialScreen> {
                       if (index == tasks.length - 1)
                         const SizedBox.shrink()
                       else
-                        ListTile(
-                          title: Text(
-                            task.title,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 10), // Add margin between tasks
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.1), // Slightly opaque background for the task item
+                            borderRadius: BorderRadius.circular(15), // Rounded corners for the task item
+                            border: Border.all(
+                              width: 1.5,
+                              color: Colors.white.withOpacity(0.2), // Border for the task item
+                            ),
                           ),
-                          subtitle: Text(
-                            '${task.description} - $timeText',
-                            style: const TextStyle(color: Colors.white70),
-                          ),
-                          trailing: PopupMenuButton(
-                            icon: const Icon(Icons.more_vert, color: Colors.white),
-                            itemBuilder: (context) => [
-                              PopupMenuItem(
-                                value: 'update',
-                                child: Text(
-                                  'Update',
-                                  style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+                          child: ListTile(
+                            title: Text(
+                              task.title,
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 18),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${MaterialLocalizations.of(context).formatTimeOfDay(taskTime ?? TimeOfDay.now(), alwaysUse24HourFormat: true)} - $timeText',
+                                  style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500),
                                 ),
-                              ),
-                              PopupMenuItem(
-                                value: 'delete',
-                                child: Text(
-                                  'Delete',
-                                  style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+                                Text(
+                                  task.description,
+                                  style: const TextStyle(color: Colors.white70, fontSize: 13, fontStyle: FontStyle.italic),
                                 ),
-                              ),
-                            ],
-                            onSelected: (value) {
-                              if (value == 'update') {
-                                _showUpdateDialog(context, index);
-                              } else if (value == 'delete') {
-                                _deleteTask(index);
-                              }
-                            },
+                                if (task.repeatOptions != null && task.repeatOptions!.type != RepeatType.none)
+                                  Text(
+                                    _formatRepeatOptions(task.repeatOptions!),
+                                    style: const TextStyle(color: Colors.white70, fontSize: 12, fontStyle: FontStyle.italic),
+                                  ),
+                              ],
+                            ),
+                            trailing: PopupMenuButton(
+                              icon: const Icon(Icons.more_vert, color: Colors.white),
+                              itemBuilder: (context) => [
+                                PopupMenuItem(
+                                  value: 'update',
+                                  child: Text(
+                                    'Update',
+                                    style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: 'delete',
+                                  child: Text(
+                                    'Delete',
+                                    style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+                                  ),
+                                ),
+                              ],
+                              onSelected: (value) {
+                                if (value == 'update') {
+                                  _showUpdateDialog(context, index);
+                                } else if (value == 'delete') {
+                                  _deleteTask(index);
+                                }
+                              },
+                            ),
                           ),
                         ),
                     ],
@@ -325,6 +361,8 @@ class _DialScreenState extends State<DialScreen> {
     bool isRelative = false;
     String? solarEvent;
     int? offsetMinutes;
+    RepeatType repeatType = RepeatType.none;
+    List<int> selectedDays = []; // 1 for Monday, 7 for Sunday
 
     await showDialog(
       context: context,
@@ -437,41 +475,68 @@ class _DialScreenState extends State<DialScreen> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green.shade300,
-                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          backgroundColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 48),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(64),
+                            borderRadius: BorderRadius.circular(16),
                           ),
+                          side: BorderSide(color: Colors.white, width: 1),
                         ),
                         child: Text(
-                          time == null ? 'Select Time' : time!.format(context),
-                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                          time == null ? 'select time' : time!.format(context),
+                          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
                         ),
                       ),
                     if (isRelative)
                       Column(
                         children: [
-                          DropdownButtonFormField<String>(
-                            decoration: InputDecoration(
-                              labelText: 'Solar Event',
-                              labelStyle: const TextStyle(color: Colors.white),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide.none,
+                          Theme(
+                            data: Theme.of(context).copyWith(
+                              dropdownMenuTheme: DropdownMenuThemeData(
+                                menuStyle: MenuStyle(
+                                  shape: MaterialStateProperty.all(
+                                    RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15), // Apply rounded corners
+                                    ),
+                                  ),
+                                  backgroundColor: MaterialStateProperty.all(Colors.white.withOpacity(0.1)), // Match dropdown background
+                                ),
                               ),
-                              filled: true,
-                              fillColor: Colors.white.withOpacity(0.3),
                             ),
-                            style: const TextStyle(color: Colors.white),
-                            value: solarEvent,
-                            items: ['first light', 'dusk', 'sunrise', 'noon', 'sunset', 'last light', 'night']
-                                .map((event) => DropdownMenuItem(value: event, child: Text(event, style: const TextStyle(color: Colors.white)))) // Dropdown item text color
-                                .toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                solarEvent = value;
-                              });
-                            },
+                            child: DropdownButtonFormField<String>(
+                              decoration: InputDecoration(
+                                labelText: 'Solar Event',
+                                labelStyle: const TextStyle(color: Colors.white),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide.none,
+                                ),
+                                filled: true,
+                                fillColor: Colors.white.withOpacity(0.3),
+                              ),
+                              dropdownColor: Colors.transparent, // Set to transparent as background is handled by MenuStyle
+                              iconEnabledColor: Colors.white, // White icon
+                              style: const TextStyle(color: Colors.white),
+                              value: solarEvent,
+                              items: ['first light', 'dusk', 'sunrise', 'noon', 'sunset', 'last light', 'night']
+                                  .map((event) => DropdownMenuItem(
+                                        value: event,
+                                        child: Glassmorphism(
+                                          blur: 5,
+                                          opacity: 0.0,
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                            child: Text(event, style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white, fontSize: 16.0)),
+                                          ),
+                                        ),
+                                      ))
+                                  .toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  solarEvent = value;
+                                });
+                              },
+                            ),
                           ),
                           const SizedBox(height: 10),
                           TextField(
@@ -493,6 +558,89 @@ class _DialScreenState extends State<DialScreen> {
                           ),
                         ],
                       ),
+                    const SizedBox(height: 20),
+                    Theme(
+                      data: Theme.of(context).copyWith(
+                        dropdownMenuTheme: DropdownMenuThemeData(
+                          menuStyle: MenuStyle(
+                            shape: MaterialStateProperty.all(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(15), // Apply rounded corners
+                              ),
+                            ),
+                            backgroundColor: MaterialStateProperty.all(Colors.white.withOpacity(0.1)), // Match dropdown background
+                          ),
+                        ),
+                      ),
+                      child: DropdownButtonFormField<RepeatType>(
+                        decoration: InputDecoration(
+                          labelText: 'Repeat',
+                          labelStyle: const TextStyle(color: Colors.white),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
+                          ),
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.3),
+                        ),
+                        dropdownColor: Colors.transparent, // Set to transparent as background is handled by MenuStyle
+                        iconEnabledColor: Colors.white, // White icon
+                        style: const TextStyle(color: Colors.white),
+                        value: repeatType,
+                        items: RepeatType.values
+                            .map((type) => DropdownMenuItem(
+                                  value: type,
+                                  child: Glassmorphism(
+                                    blur: 5,
+                                    opacity: 0.0,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0.0),
+                                      child: Text(
+                                        type.toString().split('.').last,
+                                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white, fontSize: 16.0),
+                                      ),
+                                    ),
+                                  ),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            repeatType = value!;
+                            selectedDays = []; // Reset selected days when repeat type changes
+                          });
+                        },
+                      ),
+                    ),
+                    if (repeatType == RepeatType.weekly)
+                      Column(
+                        children: [
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 8.0,
+                            children: List<Widget>.generate(7, (int index) {
+                              final day = index + 1; // 1 for Monday, 7 for Sunday
+                              final dayName = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index];
+                              return FilterChip(
+                                label: Text(dayName),
+                                selected: selectedDays.contains(day),
+                                onSelected: (bool selected) {
+                                  setState(() {
+                                    if (selected) {
+                                      selectedDays.add(day);
+                                    } else {
+                                      selectedDays.removeWhere((element) => element == day);
+                                    }
+                                  });
+                                },
+                                selectedColor: Colors.green.shade300,
+                                checkmarkColor: Colors.white,
+                                labelStyle: TextStyle(color: selectedDays.contains(day) ? Colors.white : Colors.white70),
+                                backgroundColor: Colors.white.withOpacity(0.3),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
                   ],
                 );
               },
@@ -510,14 +658,19 @@ class _DialScreenState extends State<DialScreen> {
               ElevatedButton(
                 onPressed: () {
                   if (title.isNotEmpty && description.isNotEmpty) {
+                    RepeatOptions? finalRepeatOptions;
+                    if (repeatType != RepeatType.none) {
+                      finalRepeatOptions = RepeatOptions(type: repeatType, selectedDays: selectedDays);
+                    }
+
                     if (!isRelative && time != null) {
                       _addTask(
-                        Task(title: title, description: description, time: time!),
+                        Task(title: title, description: description, time: time!, repeatOptions: finalRepeatOptions),
                       );
                       Navigator.pop(context);
                     } else if (isRelative && solarEvent != null && offsetMinutes != null) {
                       _addTask(
-                        Task(title: title, description: description, isRelative: true, solarEvent: solarEvent, offsetMinutes: offsetMinutes),
+                        Task(title: title, description: description, isRelative: true, solarEvent: solarEvent, offsetMinutes: offsetMinutes, repeatOptions: finalRepeatOptions),
                       );
                       Navigator.pop(context);
                     }
@@ -549,6 +702,8 @@ class _DialScreenState extends State<DialScreen> {
     bool isRelative = tasks[index].isRelative;
     String? solarEvent = tasks[index].solarEvent;
     int? offsetMinutes = tasks[index].offsetMinutes;
+    RepeatType repeatType = tasks[index].repeatOptions?.type ?? RepeatType.none;
+    List<int> selectedDays = List.from(tasks[index].repeatOptions?.selectedDays ?? []);
 
     await showDialog(
       context: context,
@@ -663,41 +818,68 @@ class _DialScreenState extends State<DialScreen> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green.shade300,
-                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          backgroundColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 48),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(64),
+                            borderRadius: BorderRadius.circular(16),
                           ),
+                          side: BorderSide(color: Colors.white, width: 1),
                         ),
                         child: Text(
-                          time == null ? 'Select Time' : time!.format(context),
-                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                          time == null ? 'select time' : time!.format(context),
+                          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
                         ),
                       ),
                     if (isRelative)
                       Column(
                         children: [
-                          DropdownButtonFormField<String>(
-                            decoration: InputDecoration(
-                              labelText: 'Solar Event',
-                              labelStyle: const TextStyle(color: Colors.white),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide.none,
+                          Theme(
+                            data: Theme.of(context).copyWith(
+                              dropdownMenuTheme: DropdownMenuThemeData(
+                                menuStyle: MenuStyle(
+                                  shape: MaterialStateProperty.all(
+                                    RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(15), // Apply rounded corners
+                                    ),
+                                  ),
+                                  backgroundColor: MaterialStateProperty.all(Colors.white.withOpacity(0.1)), // Match dropdown background
+                                ),
                               ),
-                              filled: true,
-                              fillColor: Colors.white.withOpacity(0.3),
                             ),
-                            style: const TextStyle(color: Colors.white),
-                            value: solarEvent,
-                            items: ['sunrise', 'sunset', 'solarNoon', 'astronomicalTwilightBegin', 'nauticalTwilightBegin', 'civilTwilightBegin', 'civilTwilightEnd', 'nauticalTwilightEnd', 'astronomicalTwilightEnd']
-                                .map((event) => DropdownMenuItem(value: event, child: Text(event, style: const TextStyle(color: Colors.black))))
-                                .toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                solarEvent = value;
-                              });
-                            },
+                            child: DropdownButtonFormField<String>(
+                              decoration: InputDecoration(
+                                labelText: 'Solar Event',
+                                labelStyle: const TextStyle(color: Colors.white),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide.none,
+                                ),
+                                filled: true,
+                                fillColor: Colors.white.withOpacity(0.3),
+                              ),
+                              dropdownColor: Colors.transparent, // Set to transparent as background is handled by MenuStyle
+                              iconEnabledColor: Colors.white, // White icon
+                              style: const TextStyle(color: Colors.white),
+                              value: solarEvent,
+                              items: ['first light', 'dusk', 'sunrise', 'noon', 'sunset', 'last light', 'night']
+                                  .map((event) => DropdownMenuItem(
+                                        value: event,
+                                        child: Glassmorphism(
+                                          blur: 5,
+                                          opacity: 0.1,
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                            child: Text(event, style: const TextStyle(color: Colors.white)),
+                                          ),
+                                        ),
+                                      ))
+                                  .toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  solarEvent = value;
+                                });
+                              },
+                            ),
                           ),
                           const SizedBox(height: 10),
                           TextField(
@@ -720,6 +902,75 @@ class _DialScreenState extends State<DialScreen> {
                           ),
                         ],
                       ),
+                    const SizedBox(height: 20),
+                    DropdownButtonFormField<RepeatType>(
+                      decoration: InputDecoration(
+                        labelText: 'Repeat',
+                        labelStyle: const TextStyle(color: Colors.white),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.3),
+                      ),
+                      dropdownColor: Colors.white.withOpacity(0.1), // Glassmorphism background
+                      iconEnabledColor: Colors.white, // White icon
+                      style: const TextStyle(color: Colors.white),
+                      value: repeatType,
+                      items: RepeatType.values
+                          .map((type) => DropdownMenuItem(
+                                value: type,
+                                child: Glassmorphism(
+                                  blur: 5,
+                                  opacity: 0.1,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                                    child: Text(
+                                      type.toString().split('.').last,
+                                      style: const TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          repeatType = value!;
+                          selectedDays = []; // Reset selected days when repeat type changes
+                        });
+                      },
+                    ),
+                    if (repeatType == RepeatType.weekly)
+                      Column(
+                        children: [
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 8.0,
+                            children: List<Widget>.generate(7, (int index) {
+                              final day = index + 1; // 1 for Monday, 7 for Sunday
+                              final dayName = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index];
+                              return FilterChip(
+                                label: Text(dayName),
+                                selected: selectedDays.contains(day),
+                                onSelected: (bool selected) {
+                                  setState(() {
+                                    if (selected) {
+                                      selectedDays.add(day);
+                                    } else {
+                                      selectedDays.removeWhere((element) => element == day);
+                                    }
+                                  });
+                                },
+                                selectedColor: Colors.green.shade300,
+                                checkmarkColor: Colors.white,
+                                labelStyle: TextStyle(color: selectedDays.contains(day) ? Colors.white : Colors.white70),
+                                backgroundColor: Colors.white.withOpacity(0.3),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
                   ],
                 );
               },
@@ -737,16 +988,21 @@ class _DialScreenState extends State<DialScreen> {
               ElevatedButton(
                 onPressed: () {
                   if (title.isNotEmpty && description.isNotEmpty) {
+                    RepeatOptions? finalRepeatOptions;
+                    if (repeatType != RepeatType.none) {
+                      finalRepeatOptions = RepeatOptions(type: repeatType, selectedDays: selectedDays);
+                    }
+
                     if (!isRelative && time != null) {
                       _updateTask(
                         index,
-                        Task(title: title, description: description, time: time!),
+                        Task(title: title, description: description, time: time!, repeatOptions: finalRepeatOptions),
                       );
                       Navigator.pop(context);
                     } else if (isRelative && solarEvent != null && offsetMinutes != null) {
                       _updateTask(
                         index,
-                        Task(title: title, description: description, isRelative: true, solarEvent: solarEvent, offsetMinutes: offsetMinutes),
+                        Task(title: title, description: description, isRelative: true, solarEvent: solarEvent, offsetMinutes: offsetMinutes, repeatOptions: finalRepeatOptions),
                       );
                       Navigator.pop(context);
                     }

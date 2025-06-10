@@ -6,9 +6,18 @@ import 'package:sundial/screens/login_screen.dart';
 import 'package:sundial/screens/register_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:sundial/objectbox.dart'; // NEW
+
+/// Provides access to the ObjectBox Store throughout the app.
+late ObjectBox objectbox; // NEW
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // NEW: Initialize ObjectBox
+  objectbox = await ObjectBox.create();
+  WidgetsBinding.instance.addObserver(LifecycleEventHandler());
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -32,15 +41,10 @@ class SundialApp extends StatelessWidget {
         fontFamily: 'GothamRounded',
         brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1E3F05),
+          seedColor: const Color(0xFF13162B),
           brightness: Brightness.dark,
-          primary: const Color(0xFF1E3F05),
-          secondary: const Color.fromARGB(
-            255,
-            178,
-            246,
-            255,
-          ), // Pastel Orange AccentR
+          primary: const Color(0xFF13162B),
+          secondary: const Color(0xFF3A4058),
         ),
         useMaterial3: true,
       ),
@@ -87,5 +91,16 @@ class SundialApp extends StatelessWidget {
         );
       },
     );
+  }
+}
+
+// NEW: Handle app lifecycle to close ObjectBox store
+class LifecycleEventHandler extends WidgetsBindingObserver {
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      objectbox.store.close();
+    }
   }
 }

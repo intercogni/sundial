@@ -12,7 +12,7 @@ class SundialDivider extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.0),
+            padding: EdgeInsets.only(left: 32.0, right: 32.0, bottom: 8.0),
           child: Row(
             children: [
               Padding(

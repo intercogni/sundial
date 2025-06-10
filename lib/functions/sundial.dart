@@ -7,12 +7,18 @@ int minutifyTimeOfDay(TimeOfDay? t) {
   return t.hour * 60 + t.minute;
 }
 
-bool shouldDivideTask(List<Task> tasks, int index, TimeOfDay time) {
-  if (index == 0 && minutifyTimeOfDay(tasks[index].time) >= minutifyTimeOfDay(time)) {
+bool shouldDivideTask(TimeOfDay? previousTaskTime, TimeOfDay? currentTaskTime, TimeOfDay dividerTime) {
+  final int previousMinutes = minutifyTimeOfDay(previousTaskTime);
+  final int currentMinutes = minutifyTimeOfDay(currentTaskTime);
+  final int dividerMinutes = minutifyTimeOfDay(dividerTime);
+
+  // If it's the very first task and its time is at or after the divider time
+  if (previousTaskTime == null && currentTaskTime != null && currentMinutes >= dividerMinutes) {
     return true;
   }
 
-  return index > 0 &&
-    minutifyTimeOfDay(tasks[index - 1].time) < minutifyTimeOfDay(time) &&
-    minutifyTimeOfDay(tasks[index].time) >= minutifyTimeOfDay(time);
+  // If there's a previous task, and the divider time falls between the previous task and the current task
+  return previousTaskTime != null && currentTaskTime != null &&
+         previousMinutes < dividerMinutes &&
+         currentMinutes >= dividerMinutes;
 }
