@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sundial/screens/home.dart';
-import 'package:sundial/screens/login_screen.dart'; // Import LoginScreen for navigation
+import 'package:sundial/screens/login_screen.dart'; 
 
-// Reusing Glassmorphism from login_screen.dart for consistency
+
 class Glassmorphism extends StatelessWidget {
   final double blur;
   final double opacity;
@@ -70,7 +70,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      // Navigate to home screen on successful registration
+      
       if (mounted) {
         Navigator.of(context).pushReplacementNamed('/home');
       }

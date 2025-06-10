@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:ui'; // Import for ImageFilter
+import 'dart:ui'; 
 import 'package:sundial/screens/home.dart';
 import 'package:sundial/screens/dial.dart';
 import 'package:sundial/screens/times.dart';
@@ -36,7 +36,7 @@ class _BottomTabState extends State<BottomTab> {
         children: [
           Icon(
             iconData,
-            size: isSelected ? 32.0 : 24.0, // Bigger when selected
+            size: isSelected ? 32.0 : 24.0, 
           ),
           if (isSelected)
             Container(
@@ -44,7 +44,7 @@ class _BottomTabState extends State<BottomTab> {
               height: 6.0,
               width: 6.0,
               decoration: const BoxDecoration(
-                color: Colors.white, // The dot color
+                color: Colors.white, 
                 shape: BoxShape.circle,
               ),
             ),
@@ -64,21 +64,21 @@ class _BottomTabState extends State<BottomTab> {
             alignment: Alignment.bottomCenter,
             child: SafeArea(
               child: Padding(
-              padding: const EdgeInsets.only(bottom: 0.0), // Adjust padding as needed
+              padding: const EdgeInsets.only(bottom: 0.0), 
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: ClipRRect(
-                borderRadius: BorderRadius.circular(20.0), // Rounded corners for the glass effect
+                borderRadius: BorderRadius.circular(90.0), 
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // Glassmorphism blur effect
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), 
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2), // Translucent background
+                      color: Colors.white.withOpacity(0.2), 
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.4), // Subtle border
+                        color: Colors.white.withOpacity(0.4), 
                         width: 1.5,
                       ),
-                      borderRadius: BorderRadius.circular(20.0),
+                      borderRadius: BorderRadius.circular(90.0),
                     ),
                     child: Theme(
                       data: Theme.of(context).copyWith(
@@ -86,8 +86,8 @@ class _BottomTabState extends State<BottomTab> {
                         highlightColor: Colors.transparent,
                       ),
                       child: BottomNavigationBar(
-                        backgroundColor: Colors.transparent, // Make background transparent
-                        elevation: 0, // Remove default elevation
+                        backgroundColor: Colors.transparent, 
+                        elevation: 0, 
                         items: <BottomNavigationBarItem>[
                           _buildTabItem(Icons.dashboard, 0),
                           _buildTabItem(Icons.access_time, 1),

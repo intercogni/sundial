@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:sundial/screens/home.dart'; // Assuming home.dart is the next screen
+import 'package:sundial/screens/home.dart'; 
 
 class Glassmorphism extends StatelessWidget {
   final double blur;
@@ -55,7 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      // Navigate to home screen on successful login
+      
       if (mounted) {
         Navigator.of(context).pushReplacementNamed('/home');
       }
@@ -113,8 +113,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Container(
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: Colors.transparent, // You can change the color as needed
-                            width: 0, // You can change the width as needed
+                            color: Colors.transparent, 
+                            width: 0, 
                           ),
                         ),
                         child: SvgPicture.asset(
@@ -185,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green.shade300,
                               padding: const EdgeInsets.symmetric(vertical: 15),
-                              // Removed textStyle to enforce using the default font family
+                              
                               shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(64),
                               ),
@@ -204,7 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 10),
                           TextButton(
                             onPressed: () {
-                              // TODO: Implement forgot password functionality
+                              //todo
                             },
                             child: const Text(
                               'Forgot Password?',

@@ -12,12 +12,12 @@ bool shouldDivideTask(TimeOfDay? previousTaskTime, TimeOfDay? currentTaskTime, T
   final int currentMinutes = minutifyTimeOfDay(currentTaskTime);
   final int dividerMinutes = minutifyTimeOfDay(dividerTime);
 
-  // If it's the very first task and its time is at or after the divider time
+  
   if (previousTaskTime == null && currentTaskTime != null && currentMinutes >= dividerMinutes) {
     return true;
   }
 
-  // If there's a previous task, and the divider time falls between the previous task and the current task
+  
   return previousTaskTime != null && currentTaskTime != null &&
          previousMinutes < dividerMinutes &&
          currentMinutes >= dividerMinutes;

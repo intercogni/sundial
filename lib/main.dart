@@ -6,15 +6,15 @@ import 'package:sundial/screens/login_screen.dart';
 import 'package:sundial/screens/register_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'package:sundial/objectbox.dart'; // NEW
+import 'package:sundial/objectbox.dart'; 
 
-/// Provides access to the ObjectBox Store throughout the app.
-late ObjectBox objectbox; // NEW
+
+late ObjectBox objectbox; 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // NEW: Initialize ObjectBox
+  
   objectbox = await ObjectBox.create();
   WidgetsBinding.instance.addObserver(LifecycleEventHandler());
 
@@ -67,9 +67,9 @@ class SundialApp extends StatelessWidget {
         }
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) => builder(context),
-          transitionDuration: const Duration(milliseconds: 333), // Make animation faster
+          transitionDuration: const Duration(milliseconds: 333), 
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0); // Start from top
+            const begin = Offset(0.0, 1.0); 
             const end = Offset.zero;
             const curve = Curves.ease;
 
@@ -81,7 +81,7 @@ class SundialApp extends StatelessWidget {
               child: ScaleTransition(
                 scale: animation.drive(scaleTween),
                 child: FadeTransition(
-                  opacity: CurvedAnimation(parent: animation, curve: Curves.easeIn), // Slight fade in
+                  opacity: CurvedAnimation(parent: animation, curve: Curves.easeIn), 
                   child: child,
                 ),
               ),
@@ -94,7 +94,7 @@ class SundialApp extends StatelessWidget {
   }
 }
 
-// NEW: Handle app lifecycle to close ObjectBox store
+
 class LifecycleEventHandler extends WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {

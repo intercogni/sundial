@@ -8,7 +8,7 @@ enum RepeatType {
 
 class RepeatOptions {
   final RepeatType type;
-  final List<int> selectedDays; // 1 for Monday, 7 for Sunday
+  final List<int> selectedDays; 
 
   RepeatOptions({
     required this.type,
@@ -23,7 +23,7 @@ class Task {
   final bool isRelative;
   final String? solarEvent;
   final int? offsetMinutes;
-  final RepeatOptions? repeatOptions; // New property
+  final RepeatOptions? repeatOptions; 
 
   Task({
     required this.title,
@@ -32,6 +32,6 @@ class Task {
     this.isRelative = false,
     this.solarEvent,
     this.offsetMinutes,
-    this.repeatOptions, // Make repeatOptions optional
+    this.repeatOptions, 
   });
 }

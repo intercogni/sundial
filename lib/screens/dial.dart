@@ -43,14 +43,14 @@ class DialScreen extends StatefulWidget {
 class _DialScreenState extends State<DialScreen> {
   List<Task> tasks = [];
 
-  // Helper function to get the absolute TimeOfDay for a task
+  
   TimeOfDay? _getTaskTime(Task task, SolarData solarData) {
     if (!task.isRelative) {
       return task.time;
     }
 
     if (task.solarEvent == null || task.offsetMinutes == null) {
-      return null; // Should not happen if task is created correctly
+      return null; 
     }
 
     TimeOfDay? solarEventTime;
@@ -77,19 +77,19 @@ class _DialScreenState extends State<DialScreen> {
         solarEventTime = solarData.astronomicalTwilightEnd;
         break;
       default:
-        return null; // Unknown solar event
+        return null; 
     }
 
     if (solarEventTime == null) {
-      return null; // Solar event time not available
+      return null; 
     }
 
-    // Calculate the time with offset
+    
     final totalMinutes = solarEventTime.hour * 60 + solarEventTime.minute + task.offsetMinutes!;
     final hour = totalMinutes ~/ 60;
     final minute = totalMinutes % 60;
 
-    // Handle time wrapping around midnight
+    
     return TimeOfDay(hour: hour % 24, minute: minute);
   }
 
@@ -99,11 +99,11 @@ class _DialScreenState extends State<DialScreen> {
       final timeB = _getTaskTime(b, solarData);
 
       if (timeA == null && timeB == null) {
-        return 0; // Keep original order if both are null
+        return 0; 
       } else if (timeA == null) {
-        return 1; // Nulls go to the end
+        return 1; 
       } else if (timeB == null) {
-        return -1; // Nulls go to the end
+        return -1; 
       } else {
         return timeA.compareTo(timeB);
       }
@@ -118,20 +118,20 @@ class _DialScreenState extends State<DialScreen> {
       description: '--', 
       time: const TimeOfDay(
         hour: 23, minute: 59)));
-    // Initial sort (will be updated in build)
+    
   }
 
   void _addTask(Task task) {
     setState(() {
       tasks.add(task);
-      // Sorting is now handled in build
+      
     });
   }
 
   void _updateTask(int index, Task task) {
     setState(() {
       tasks[index] = task;
-      // Sorting is now handled in build
+      
     });
   }
 
@@ -153,14 +153,14 @@ class _DialScreenState extends State<DialScreen> {
       case RepeatType.none:
         return 'Does not repeat';
       default:
-        return 'Unknown repeat type'; // Handle any unhandled cases
+        return 'Unknown repeat type'; 
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final solarData = Provider.of<SolarData>(context);
-    _sortTasks(solarData); // Sort tasks whenever solar data changes
+    _sortTasks(solarData); 
 
     return Scaffold(
       body: Container(
@@ -214,8 +214,8 @@ class _DialScreenState extends State<DialScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(0),
                       child: ListView.builder(
-                        shrinkWrap: true, // Important for nested ListView
-                        physics: const NeverScrollableScrollPhysics(), // Disable scrolling for nested ListView
+                        shrinkWrap: true, 
+                        physics: const NeverScrollableScrollPhysics(), 
                         itemCount: tasks.length,
                         itemBuilder: (context, index) {
                           if (index >= tasks.length) {
@@ -234,9 +234,9 @@ class _DialScreenState extends State<DialScreen> {
                   if (shouldDivideTask(previousTaskTime, taskTime, solarData.nauticalTwilightBegin!)) {
                     dividers.add(SundialDivider(time: solarData.nauticalTwilightBegin!, label: 'dusk'));
                   }
-                  // if (shouldDivideTask(previousTaskTime, taskTime, solarData.civilTwilightBegin!)) {
-                  //   dividers.add(SundialDivider(time: solarData.civilTwilightBegin!, label: 'Dusk'));
-                  // }
+                  
+                  
+                  
                   if (shouldDivideTask(previousTaskTime, taskTime, solarData.sunrise!)) {
                     dividers.add(SundialDivider(time: solarData.sunrise!, label: 'sunrise'));
                   }
@@ -246,9 +246,9 @@ class _DialScreenState extends State<DialScreen> {
                   if (shouldDivideTask(previousTaskTime, taskTime, solarData.sunset!)) {
                     dividers.add(SundialDivider(time: solarData.sunset!, label: 'sunset'));
                   }
-                  // if (shouldDivideTask(previousTaskTime, taskTime, solarData.civilTwilightEnd!)) {
-                  //   dividers.add(SundialDivider(time: solarData.civilTwilightEnd!, label: 'Dawn Ends'));
-                  // }
+                  
+                  
+                  
                   if (shouldDivideTask(previousTaskTime, taskTime, solarData.nauticalTwilightEnd!)) {
                     dividers.add(SundialDivider(time: solarData.nauticalTwilightEnd!, label: 'last light'));
                   }
@@ -279,13 +279,13 @@ class _DialScreenState extends State<DialScreen> {
                         const SizedBox.shrink()
                       else
                         Container(
-                          margin: const EdgeInsets.only(bottom: 10), // Add margin between tasks
+                          margin: const EdgeInsets.only(bottom: 10), 
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1), // Slightly opaque background for the task item
-                            borderRadius: BorderRadius.circular(15), // Rounded corners for the task item
+                            color: Colors.white.withOpacity(0.1), 
+                            borderRadius: BorderRadius.circular(15), 
                             border: Border.all(
                               width: 1.5,
-                              color: Colors.white.withOpacity(0.2), // Border for the task item
+                              color: Colors.white.withOpacity(0.2), 
                             ),
                           ),
                           child: ListTile(
@@ -362,7 +362,7 @@ class _DialScreenState extends State<DialScreen> {
     String? solarEvent;
     int? offsetMinutes;
     RepeatType repeatType = RepeatType.none;
-    List<int> selectedDays = []; // 1 for Monday, 7 for Sunday
+    List<int> selectedDays = []; 
 
     await showDialog(
       context: context,
@@ -371,7 +371,7 @@ class _DialScreenState extends State<DialScreen> {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: AlertDialog(
-            backgroundColor: Colors.white.withOpacity(0.1), // Semi-transparent background
+            backgroundColor: Colors.white.withOpacity(0.1), 
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
               side: BorderSide(
@@ -402,11 +402,11 @@ class _DialScreenState extends State<DialScreen> {
                             isRelative = index == 1;
                           });
                         },
-                        color: Colors.white, // Text color for unselected
-                        selectedColor: Colors.white, // Text color for selected
-                        fillColor: Colors.white.withOpacity(0.3), // Background color for selected
-                        borderColor: Colors.white.withOpacity(0.5), // Border color
-                        selectedBorderColor: Colors.white, // Border color for selected
+                        color: Colors.white, 
+                        selectedColor: Colors.white, 
+                        fillColor: Colors.white.withOpacity(0.3), 
+                        borderColor: Colors.white.withOpacity(0.5), 
+                        selectedBorderColor: Colors.white, 
                         borderRadius: BorderRadius.circular(15.0),
                         children: const <Widget>[
                           Padding(
@@ -496,10 +496,10 @@ class _DialScreenState extends State<DialScreen> {
                                 menuStyle: MenuStyle(
                                   shape: MaterialStateProperty.all(
                                     RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15), // Apply rounded corners
+                                      borderRadius: BorderRadius.circular(15), 
                                     ),
                                   ),
-                                  backgroundColor: MaterialStateProperty.all(Colors.white.withOpacity(0.1)), // Match dropdown background
+                                  backgroundColor: MaterialStateProperty.all(Colors.white.withOpacity(0.1)), 
                                 ),
                               ),
                             ),
@@ -514,8 +514,8 @@ class _DialScreenState extends State<DialScreen> {
                                 filled: true,
                                 fillColor: Colors.white.withOpacity(0.3),
                               ),
-                              dropdownColor: Colors.transparent, // Set to transparent as background is handled by MenuStyle
-                              iconEnabledColor: Colors.white, // White icon
+                              dropdownColor: Colors.transparent, 
+                              iconEnabledColor: Colors.white, 
                               style: const TextStyle(color: Colors.white),
                               value: solarEvent,
                               items: ['first light', 'dusk', 'sunrise', 'noon', 'sunset', 'last light', 'night']
@@ -565,10 +565,10 @@ class _DialScreenState extends State<DialScreen> {
                           menuStyle: MenuStyle(
                             shape: MaterialStateProperty.all(
                               RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15), // Apply rounded corners
+                                borderRadius: BorderRadius.circular(15), 
                               ),
                             ),
-                            backgroundColor: MaterialStateProperty.all(Colors.white.withOpacity(0.1)), // Match dropdown background
+                            backgroundColor: MaterialStateProperty.all(Colors.white.withOpacity(0.1)), 
                           ),
                         ),
                       ),
@@ -583,8 +583,8 @@ class _DialScreenState extends State<DialScreen> {
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.3),
                         ),
-                        dropdownColor: Colors.transparent, // Set to transparent as background is handled by MenuStyle
-                        iconEnabledColor: Colors.white, // White icon
+                        dropdownColor: Colors.transparent, 
+                        iconEnabledColor: Colors.white, 
                         style: const TextStyle(color: Colors.white),
                         value: repeatType,
                         items: RepeatType.values
@@ -606,7 +606,7 @@ class _DialScreenState extends State<DialScreen> {
                         onChanged: (value) {
                           setState(() {
                             repeatType = value!;
-                            selectedDays = []; // Reset selected days when repeat type changes
+                            selectedDays = []; 
                           });
                         },
                       ),
@@ -618,7 +618,7 @@ class _DialScreenState extends State<DialScreen> {
                           Wrap(
                             spacing: 8.0,
                             children: List<Widget>.generate(7, (int index) {
-                              final day = index + 1; // 1 for Monday, 7 for Sunday
+                              final day = index + 1; 
                               final dayName = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index];
                               return FilterChip(
                                 label: Text(dayName),
@@ -712,7 +712,7 @@ class _DialScreenState extends State<DialScreen> {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: AlertDialog(
-            backgroundColor: Colors.white.withOpacity(0.1), // Semi-transparent background
+            backgroundColor: Colors.white.withOpacity(0.1), 
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
               side: BorderSide(
@@ -779,11 +779,11 @@ class _DialScreenState extends State<DialScreen> {
                             isRelative = index == 1;
                           });
                         },
-                        color: Colors.white, // Text color for unselected
-                        selectedColor: Colors.white, // Text color for selected
-                        fillColor: Colors.white.withOpacity(0.3), // Background color for selected
-                        borderColor: Colors.white.withOpacity(0.5), // Border color
-                        selectedBorderColor: Colors.white, // Border color for selected
+                        color: Colors.white, 
+                        selectedColor: Colors.white, 
+                        fillColor: Colors.white.withOpacity(0.3), 
+                        borderColor: Colors.white.withOpacity(0.5), 
+                        selectedBorderColor: Colors.white, 
                         borderRadius: BorderRadius.circular(15.0),
                         children: const <Widget>[
                           Padding(
@@ -839,10 +839,10 @@ class _DialScreenState extends State<DialScreen> {
                                 menuStyle: MenuStyle(
                                   shape: MaterialStateProperty.all(
                                     RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15), // Apply rounded corners
+                                      borderRadius: BorderRadius.circular(15), 
                                     ),
                                   ),
-                                  backgroundColor: MaterialStateProperty.all(Colors.white.withOpacity(0.1)), // Match dropdown background
+                                  backgroundColor: MaterialStateProperty.all(Colors.white.withOpacity(0.1)), 
                                 ),
                               ),
                             ),
@@ -857,8 +857,8 @@ class _DialScreenState extends State<DialScreen> {
                                 filled: true,
                                 fillColor: Colors.white.withOpacity(0.3),
                               ),
-                              dropdownColor: Colors.transparent, // Set to transparent as background is handled by MenuStyle
-                              iconEnabledColor: Colors.white, // White icon
+                              dropdownColor: Colors.transparent, 
+                              iconEnabledColor: Colors.white, 
                               style: const TextStyle(color: Colors.white),
                               value: solarEvent,
                               items: ['first light', 'dusk', 'sunrise', 'noon', 'sunset', 'last light', 'night']
@@ -914,8 +914,8 @@ class _DialScreenState extends State<DialScreen> {
                         filled: true,
                         fillColor: Colors.white.withOpacity(0.3),
                       ),
-                      dropdownColor: Colors.white.withOpacity(0.1), // Glassmorphism background
-                      iconEnabledColor: Colors.white, // White icon
+                      dropdownColor: Colors.white.withOpacity(0.1), 
+                      iconEnabledColor: Colors.white, 
                       style: const TextStyle(color: Colors.white),
                       value: repeatType,
                       items: RepeatType.values
@@ -937,7 +937,7 @@ class _DialScreenState extends State<DialScreen> {
                       onChanged: (value) {
                         setState(() {
                           repeatType = value!;
-                          selectedDays = []; // Reset selected days when repeat type changes
+                          selectedDays = []; 
                         });
                       },
                     ),
@@ -948,7 +948,7 @@ class _DialScreenState extends State<DialScreen> {
                           Wrap(
                             spacing: 8.0,
                             children: List<Widget>.generate(7, (int index) {
-                              final day = index + 1; // 1 for Monday, 7 for Sunday
+                              final day = index + 1; 
                               final dayName = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index];
                               return FilterChip(
                                 label: Text(dayName),
