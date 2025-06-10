@@ -17,6 +17,7 @@ dependencies:
   flutter_svg: ^2.0.9
   objectbox: ^4.3.0
   objectbox_flutter_libs: ^4.3.0
+  ming_cute_icons: ^0.0.7
 dev_dependencies:
   flutter_test:
     sdk: flutter

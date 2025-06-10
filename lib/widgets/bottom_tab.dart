@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ming_cute_icons/ming_cute_icons.dart';
 import 'dart:ui'; 
 import 'package:sundial/screens/home.dart';
 import 'package:sundial/screens/dial.dart';
@@ -28,15 +29,15 @@ class _BottomTabState extends State<BottomTab> {
     });
   }
 
-  BottomNavigationBarItem _buildTabItem(IconData iconData, int index) {
+  BottomNavigationBarItem _buildTabItem(IconData unselectedIcon, selectedIcon, int index) {
     final bool isSelected = _selectedIndex == index;
     return BottomNavigationBarItem(
       icon: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            iconData,
-            size: isSelected ? 32.0 : 24.0, 
+            isSelected ? selectedIcon : unselectedIcon,
+            size: isSelected ? 34.0 : 28.0, 
           ),
           if (isSelected)
             Container(
@@ -89,10 +90,26 @@ class _BottomTabState extends State<BottomTab> {
                         backgroundColor: Colors.transparent, 
                         elevation: 0, 
                         items: <BottomNavigationBarItem>[
-                          _buildTabItem(Icons.dashboard, 0),
-                          _buildTabItem(Icons.access_time, 1),
-                          _buildTabItem(Icons.bar_chart, 2),
-                          _buildTabItem(Icons.account_circle, 3),
+                          _buildTabItem(
+                            MingCuteIcons.mgc_building_6_line, 
+                            MingCuteIcons.mgc_building_6_fill, 
+                            0
+                          ),
+                          _buildTabItem(
+                            MingCuteIcons.mgc_alarm_2_line, 
+                            MingCuteIcons.mgc_alarm_2_fill, 
+                            1
+                          ),
+                          _buildTabItem(
+                            MingCuteIcons.mgc_inbox_line, 
+                            MingCuteIcons.mgc_inbox_fill, 
+                            2
+                          ),
+                          _buildTabItem(
+                            MingCuteIcons.mgc_settings_3_line, 
+                            MingCuteIcons.mgc_settings_3_fill, 
+                            3
+                          ),
                         ],
                         currentIndex: _selectedIndex,
                         selectedItemColor: Colors.white,
