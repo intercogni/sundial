@@ -1,8 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../services/profile_pic_service.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
+
+  static final _picManager = ProfilePicManager();
 
   Future<void> _showChangeUsernameDialog(BuildContext context) async {
     String newUsername = '';
@@ -97,6 +100,27 @@ class AccountScreen extends StatelessWidget {
       ),
       body: ListView(
         children: <Widget>[
+          const SizedBox(height: 20),
+
+          Center(child: _picManager.profilePicWidget(radius: 50)),
+          const SizedBox(height: 10),
+
+          ListTile(
+            leading: const Icon(Icons.image),
+            title: const Text('Upload / Change Profile Picture'),
+            onTap: () async {
+              await _picManager.uploadAndSaveProfilePic();
+            },
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.delete),
+            title: const Text('Delete Profile Picture'),
+            onTap: () async {
+              await _picManager.deleteProfilePic();
+            },
+          ),
+
           ListTile(
             leading: const Icon(Icons.person),
             title: const Text('Change Username'),
