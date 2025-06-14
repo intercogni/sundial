@@ -6,6 +6,7 @@
 > please make sure that you are referring to ***one of the branches below*** and their respective commits for grading, as the ***main branch includes latest commits*** to the app, ***including updates done after assignment deadline/s.***
 
 - **Section 5, 25 Mar 2025:** `s05`
+- **Section 11, 19 May 2025:** `s11`
 
 # `sundial` *(work in progress 🛠️)*
 > *an intercogni app*
@@ -17,11 +18,11 @@ Manage your daily chores based on solar events.
 
 ### 🌟 Main Pipeline 🚀
 - [x] CRUD on events based on sunrise/sunset times
-- [ ] API call for solar events based on current latitude and longitude
-- [ ] CRUD on events based on astronomical dusk/dawn begin & end
-- [ ] CRUD on events based on nautical dusk/dawn begin & end
-- [ ] CRUD on events based on civil dusk/dawn begin & end
-- [ ] CRUD on events based on solar noon/solar midnight
+- [x] API call for solar events based on current latitude and longitude
+- [x] CRUD on events based on astronomical dusk/dawn begin & end
+- [x] CRUD on events based on nautical dusk/dawn begin & end
+- [x] CRUD on events based on civil dusk/dawn begin & end
+- [x] CRUD on events based on solar noon/solar midnight
 - [ ] ... and many more to come
 
 ### 🌙 Side Pipeline A: Integrate Islamic Solar Events as an Option
@@ -39,48 +40,63 @@ Manage your daily chores based on solar events.
 [Click here to watch the demo video!](https://github.com/intercogni/sundial/blob/s05/docs/demo_video.webm)
 
 <div align="center">
-	<h3 align="center">🏠 Home Page</h3>
-	<em align="center">✨ This is what is displayed first thing after opening the app ✨</em> <br /> <br />
-	<img src="docs/ss.home.png" alt="🏠 Home Screen" width="25%">
+	<h3 align="center">🏠 Tasks Screen</h3>
+	<em align="center">✨ This is the main screen displaying all tasks ✨</em> <br /> <br />
+	<img src="docs/tasks_screen.png" alt="Tasks Screen" width="25%">
 </div>
 <br />
 <br />
 <br />
 <div align="center">
-	<h3 align="center">🌅 Add Sunrise Event</h3>
-	<em align="center">✨ Users can add an event based on how many minutes before/after sunrise! This example shows the user setting their shower time 60 minutes before sunrise (notice '-60' ⏳ indicates before sunrise). ✨</em> <br /> <br />
-	<img src="docs/ss.sunrise_add.png" alt="Add Sunrise Event" width="25%">
+	<h3 align="center">➕ Add Fixed Task</h3>
+	<em align="center">✨ Users can add tasks based on what time it occurs ✨</em> <br /> <br />
+	<img src="docs/add_fixed_task.png" alt="Add Fixed Task" width="25%">
 </div>
 <br />
 <br />
 <br />
 <div align="center">
-	<h3 align="center">🌇 Add Sunset Event</h3>
-	<em align="center">✨ Users can also add events based on how many minutes before/after sunset! If the minute field is 0, it will display 'on sunset' on the event list✨</em> <br /> <br />
-	<img src="docs/ss.sunset_add.png" alt="Add Sunset Event" width="25%">
+	<h3 align="center">📝 Details of Fixed Task</h3>
+	<em align="center">Users can view and edit details of a fixed task.</em> <br /> <br />
+	<img src="docs/details.add_fixed_task.png" alt="Details Fixed Task" width="25%">
 </div>
 <br />
 <br />
 <br />
 <div align="center">
-	<h3 align="center">Event List</h3>
-	<em align="center">Users can see the event list after creating events</em> <br /> <br />
-	<img src="docs/ss.final.png" alt="Event List" width="25%">
+	<h3 align="center">✅ Results of Adding Fixed Task</h3>
+	<em align="center">The fixed task is now added to the list.</em> <br /> <br />
+	<img src="docs/results.add_fixed_task.png" alt="Results Add Fixed Task" width="25%">
 </div>
 <br />
 <br />
 <br />
 <div align="center">
-	<h3 align="center">📝 Changing Events</h3>
-	<em align="center">Say the user wants to have dinner a bit later in the afternoon, they can just click the pencil button and change the event properties!</em> <br /> <br />
-	<img src="docs/ss.edit.png" alt="Edit" width="25%">
-	<img src="docs/ss.edit_finished.png" alt="Edit Finished" width="25%">
+	<h3 align="center">➕ Add Relative Task</h3>
+	<em align="center">✨ Users can add tasks based on how many minutes before/after sunrise or sunset! ✨</em> <br /> <br />
+	<img src="docs/add_relative_task.png" alt="Add Relative Task" width="25%">
 </div>
 <br />
 <br />
 <br />
 <div align="center">
-	<h3 align="center">Deleting Events</h3>
-	<em align="center">Users can also delete events! Say this particular user wants to diet and not have any meals. They can just click the red trash bin icon next to each event and delete them!</em> <br /> <br />
-	<img src="docs/ss.after_delete.png" alt="Edit" width="25%">
+	<h3 align="center">✅ Results of Adding Relative Task</h3>
+	<em align="center">✨ The task is now visible in the list ✨</em> <br /> <br />
+	<img src="docs/results.add_relative_task.png" alt="Results Add Relative Task" width="25%">
+</div>
+<br />
+<br />
+<br />
+<div align="center">
+	<h3 align="center">🔑 Login Screen</h3>
+	<em align="center">Users can log in to their accounts.</em> <br /> <br />
+	<img src="docs/login_screen.png" alt="Login Screen" width="25%">
+</div>
+<br />
+<br />
+<br />
+<div align="center">
+	<h3 align="center">📝 Signup Screen</h3>
+	<em align="center">New users can create an account.</em> <br /> <br />
+	<img src="docs/signup_screen.png" alt="Signup Screen" width="25%">
 </div>
