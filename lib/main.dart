@@ -6,17 +6,8 @@ import 'package:sundial/screens/login_screen.dart';
 import 'package:sundial/screens/register_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'package:sundial/objectbox.dart'; 
-
-
-late ObjectBox objectbox; 
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  
-  objectbox = await ObjectBox.create();
-  WidgetsBinding.instance.addObserver(LifecycleEventHandler());
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -67,9 +58,9 @@ class SundialApp extends StatelessWidget {
         }
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) => builder(context),
-          transitionDuration: const Duration(milliseconds: 333), 
+          transitionDuration: const Duration(milliseconds: 333),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 1.0); 
+            const begin = Offset(0.0, 1.0);
             const end = Offset.zero;
             const curve = Curves.ease;
 
@@ -81,7 +72,7 @@ class SundialApp extends StatelessWidget {
               child: ScaleTransition(
                 scale: animation.drive(scaleTween),
                 child: FadeTransition(
-                  opacity: CurvedAnimation(parent: animation, curve: Curves.easeIn), 
+                  opacity: CurvedAnimation(parent: animation, curve: Curves.easeIn),
                   child: child,
                 ),
               ),
@@ -91,16 +82,5 @@ class SundialApp extends StatelessWidget {
         );
       },
     );
-  }
-}
-
-
-class LifecycleEventHandler extends WidgetsBindingObserver {
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.detached) {
-      objectbox.store.close();
-    }
   }
 }

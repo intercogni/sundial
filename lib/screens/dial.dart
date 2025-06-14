@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart'; 
 import 'package:sundial/models/solar_data.dart';
 import 'package:sundial/widgets/sundial_divider.dart';
-
-import 'package:sundial/classes/sundial.dart';
-import 'package:sundial/functions/sundial.dart';
 import 'dart:ui';
+import 'package:sundial/models/task.dart'; 
+import 'package:sundial/services/task_firestore_service.dart'; 
+import 'package:cloud_firestore/cloud_firestore.dart'; 
+import 'package:sundial/functions/sundial.dart'; 
 
 class Glassmorphism extends StatelessWidget {
   final double blur;
@@ -41,16 +42,16 @@ class DialScreen extends StatefulWidget {
 }
 
 class _DialScreenState extends State<DialScreen> {
-  List<Task> tasks = [];
+  final TaskFirestoreService _taskService = TaskFirestoreService(); 
 
-  
   TimeOfDay? _getTaskTime(Task task, SolarData solarData) {
     if (!task.isRelative) {
-      return task.time;
+      
+      return TimeOfDay.fromDateTime(task.dueDate);
     }
 
     if (task.solarEvent == null || task.offsetMinutes == null) {
-      return null; 
+      return null;
     }
 
     TimeOfDay? solarEventTime;
@@ -77,68 +78,47 @@ class _DialScreenState extends State<DialScreen> {
         solarEventTime = solarData.astronomicalTwilightEnd;
         break;
       default:
-        return null; 
+        return null;
     }
 
     if (solarEventTime == null) {
-      return null; 
+      return null;
     }
 
-    
     final totalMinutes = solarEventTime.hour * 60 + solarEventTime.minute + task.offsetMinutes!;
     final hour = totalMinutes ~/ 60;
     final minute = totalMinutes % 60;
 
-    
     return TimeOfDay(hour: hour % 24, minute: minute);
   }
 
-  void _sortTasks(SolarData solarData) {
+  void _sortTasks(List<Task> tasks, SolarData solarData) {
     tasks.sort((a, b) {
       final timeA = _getTaskTime(a, solarData);
       final timeB = _getTaskTime(b, solarData);
 
       if (timeA == null && timeB == null) {
-        return 0; 
+        return 0;
       } else if (timeA == null) {
-        return 1; 
+        return 1;
       } else if (timeB == null) {
-        return -1; 
+        return -1;
       } else {
         return timeA.compareTo(timeB);
       }
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    tasks.add(Task(
-      title: '--', 
-      description: '--', 
-      time: const TimeOfDay(
-        hour: 23, minute: 59)));
-    
+  Future<void> _addTask(Task task) async {
+    await _taskService.addTask(task);
   }
 
-  void _addTask(Task task) {
-    setState(() {
-      tasks.add(task);
-      
-    });
+  Future<void> _updateTask(Task task) async {
+    await _taskService.updateTask(task);
   }
 
-  void _updateTask(int index, Task task) {
-    setState(() {
-      tasks[index] = task;
-      
-    });
-  }
-
-  void _deleteTask(int index) {
-    setState(() {
-      tasks.removeAt(index);
-    });
+  Future<void> _deleteTask(String taskId) async {
+    await _taskService.deleteTask(taskId);
   }
 
   String _formatRepeatOptions(RepeatOptions repeatOptions) {
@@ -153,14 +133,13 @@ class _DialScreenState extends State<DialScreen> {
       case RepeatType.none:
         return 'Does not repeat';
       default:
-        return 'Unknown repeat type'; 
+        return 'Unknown repeat type';
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final solarData = Provider.of<SolarData>(context);
-    _sortTasks(solarData); 
 
     return Scaffold(
       body: Container(
@@ -208,143 +187,157 @@ class _DialScreenState extends State<DialScreen> {
                 ),
               ),
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Container(
-                    child: Container(
-                      padding: const EdgeInsets.all(0),
-                      child: ListView.builder(
-                        shrinkWrap: true, 
-                        physics: const NeverScrollableScrollPhysics(), 
-                        itemCount: tasks.length,
-                        itemBuilder: (context, index) {
-                          if (index >= tasks.length) {
-                            return const SizedBox.shrink();
-                          }
+                child: StreamBuilder<List<Task>>(
+                  stream: _taskService.getTasksStream(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.red)));
+                    }
 
-                  final task = tasks[index];
-                  final taskTime = _getTaskTime(task, solarData);
-                  final previousTaskTime = index > 0 ? _getTaskTime(tasks[index - 1], solarData) : null;
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    }
 
-                  final dividers = <Widget>[];
+                    List<Task> tasks = snapshot.data ?? [];
+                    _sortTasks(tasks, solarData);
 
-                  if (shouldDivideTask(previousTaskTime, taskTime, solarData.astronomicalTwilightBegin!)) {
-                    dividers.add(SundialDivider(time: solarData.astronomicalTwilightBegin!, label: 'first light'));
-                  }
-                  if (shouldDivideTask(previousTaskTime, taskTime, solarData.nauticalTwilightBegin!)) {
-                    dividers.add(SundialDivider(time: solarData.nauticalTwilightBegin!, label: 'dusk'));
-                  }
-                  
-                  
-                  
-                  if (shouldDivideTask(previousTaskTime, taskTime, solarData.sunrise!)) {
-                    dividers.add(SundialDivider(time: solarData.sunrise!, label: 'sunrise'));
-                  }
-                  if (shouldDivideTask(previousTaskTime, taskTime, solarData.solarNoon!)) {
-                    dividers.add(SundialDivider(time: solarData.solarNoon!, label: 'noon'));
-                  }
-                  if (shouldDivideTask(previousTaskTime, taskTime, solarData.sunset!)) {
-                    dividers.add(SundialDivider(time: solarData.sunset!, label: 'sunset'));
-                  }
-                  
-                  
-                  
-                  if (shouldDivideTask(previousTaskTime, taskTime, solarData.nauticalTwilightEnd!)) {
-                    dividers.add(SundialDivider(time: solarData.nauticalTwilightEnd!, label: 'last light'));
-                  }
-                  if (shouldDivideTask(previousTaskTime, taskTime, solarData.astronomicalTwilightEnd!)) {
-                    dividers.add(SundialDivider(time: solarData.astronomicalTwilightEnd!, label: 'night'));
-                  }
-
-                  Widget? divider;
-                  if (dividers.isNotEmpty) {
-                    divider = Column(children: dividers);
-                  }
-
-                  String timeText;
-                  if (task.isRelative) {
-                    String offsetSign = task.offsetMinutes! >= 0 ? 'after' : 'before';
-                    int absoluteOffset = task.offsetMinutes!.abs();
-                    timeText = '$absoluteOffset minutes $offsetSign ${task.solarEvent}';
-                  } else {
-                    timeText = taskTime?.format(context) ?? '--:--';
-                  }
-
-
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (divider != null) divider,
-                      if (index == tasks.length - 1)
-                        const SizedBox.shrink()
-                      else
-                        Container(
-                          margin: const EdgeInsets.only(bottom: 10), 
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1), 
-                            borderRadius: BorderRadius.circular(15), 
-                            border: Border.all(
-                              width: 1.5,
-                              color: Colors.white.withOpacity(0.2), 
-                            ),
-                          ),
-                          child: ListTile(
-                            title: Text(
-                              task.title,
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 18),
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '${MaterialLocalizations.of(context).formatTimeOfDay(taskTime ?? TimeOfDay.now(), alwaysUse24HourFormat: true)} - $timeText',
-                                  style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500),
-                                ),
-                                Text(
-                                  task.description,
-                                  style: const TextStyle(color: Colors.white70, fontSize: 13, fontStyle: FontStyle.italic),
-                                ),
-                                if (task.repeatOptions != null && task.repeatOptions!.type != RepeatType.none)
-                                  Text(
-                                    _formatRepeatOptions(task.repeatOptions!),
-                                    style: const TextStyle(color: Colors.white70, fontSize: 12, fontStyle: FontStyle.italic),
-                                  ),
-                              ],
-                            ),
-                            trailing: PopupMenuButton(
-                              icon: const Icon(Icons.more_vert, color: Colors.white),
-                              itemBuilder: (context) => [
-                                PopupMenuItem(
-                                  value: 'update',
-                                  child: Text(
-                                    'Update',
-                                    style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-                                  ),
-                                ),
-                                PopupMenuItem(
-                                  value: 'delete',
-                                  child: Text(
-                                    'Delete',
-                                    style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-                                  ),
-                                ),
-                              ],
-                              onSelected: (value) {
-                                if (value == 'update') {
-                                  _showUpdateDialog(context, index);
-                                } else if (value == 'delete') {
-                                  _deleteTask(index);
-                                }
-                              },
-                            ),
-                          ),
+                    if (tasks.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          'No tasks yet! Add one using the + button.',
+                          style: TextStyle(color: Colors.white70, fontSize: 16),
+                          textAlign: TextAlign.center,
                         ),
-                    ],
-                  );
-                        },
+                      );
+                    }
+
+                    return SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(0),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: tasks.length,
+                          itemBuilder: (context, index) {
+                            if (index >= tasks.length) {
+                              return const SizedBox.shrink();
+                            }
+
+                            final task = tasks[index];
+                            final taskTime = _getTaskTime(task, solarData);
+                            final previousTaskTime = index > 0 ? _getTaskTime(tasks[index - 1], solarData) : null;
+
+                            final dividers = <Widget>[];
+
+                            if (shouldDivideTask(previousTaskTime, taskTime, solarData.astronomicalTwilightBegin!)) {
+                              dividers.add(SundialDivider(time: solarData.astronomicalTwilightBegin!, label: 'first light'));
+                            }
+                            if (shouldDivideTask(previousTaskTime, taskTime, solarData.nauticalTwilightBegin!)) {
+                              dividers.add(SundialDivider(time: solarData.nauticalTwilightBegin!, label: 'dusk'));
+                            }
+                            if (shouldDivideTask(previousTaskTime, taskTime, solarData.sunrise!)) {
+                              dividers.add(SundialDivider(time: solarData.sunrise!, label: 'sunrise'));
+                            }
+                            if (shouldDivideTask(previousTaskTime, taskTime, solarData.solarNoon!)) {
+                              dividers.add(SundialDivider(time: solarData.solarNoon!, label: 'noon'));
+                            }
+                            if (shouldDivideTask(previousTaskTime, taskTime, solarData.sunset!)) {
+                              dividers.add(SundialDivider(time: solarData.sunset!, label: 'sunset'));
+                            }
+                            if (shouldDivideTask(previousTaskTime, taskTime, solarData.nauticalTwilightEnd!)) {
+                              dividers.add(SundialDivider(time: solarData.nauticalTwilightEnd!, label: 'last light'));
+                            }
+                            if (shouldDivideTask(previousTaskTime, taskTime, solarData.astronomicalTwilightEnd!)) {
+                              dividers.add(SundialDivider(time: solarData.astronomicalTwilightEnd!, label: 'night'));
+                            }
+
+                            Widget? divider;
+                            if (dividers.isNotEmpty) {
+                              divider = Column(children: dividers);
+                            }
+
+                            String timeText;
+                            if (task.isRelative) {
+                              String offsetSign = task.offsetMinutes! >= 0 ? 'after' : 'before';
+                              int absoluteOffset = task.offsetMinutes!.abs();
+                              timeText = '$absoluteOffset minutes $offsetSign ${task.solarEvent}';
+                            } else {
+                              timeText = taskTime?.format(context) ?? '--:--';
+                            }
+
+                            return Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (divider != null) divider,
+                                Container(
+                                  margin: const EdgeInsets.only(bottom: 10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(15),
+                                    border: Border.all(
+                                      width: 1.5,
+                                      color: Colors.white.withOpacity(0.2),
+                                    ),
+                                  ),
+                                  child: ListTile(
+                                    title: Text(
+                                      task.title,
+                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 18),
+                                    ),
+                                    subtitle: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${MaterialLocalizations.of(context).formatTimeOfDay(taskTime ?? TimeOfDay.now(), alwaysUse24HourFormat: true)} - $timeText',
+                                          style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500),
+                                        ),
+                                        Text(
+                                          task.description,
+                                          style: const TextStyle(color: Colors.white70, fontSize: 13, fontStyle: FontStyle.italic),
+                                        ),
+                                        if (task.repeatOptions != null && task.repeatOptions!.type != RepeatType.none)
+                                          Text(
+                                            _formatRepeatOptions(task.repeatOptions!),
+                                            style: const TextStyle(color: Colors.white70, fontSize: 12, fontStyle: FontStyle.italic),
+                                          ),
+                                      ],
+                                    ),
+                                    trailing: PopupMenuButton(
+                                      icon: const Icon(Icons.more_vert, color: Colors.white),
+                                      itemBuilder: (context) => [
+                                        PopupMenuItem(
+                                          value: 'update',
+                                          child: Text(
+                                            'Update',
+                                            style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+                                          ),
+                                        ),
+                                        PopupMenuItem(
+                                          value: 'delete',
+                                          child: Text(
+                                            'Delete',
+                                            style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+                                          ),
+                                        ),
+                                      ],
+                                      onSelected: (value) {
+                                        if (value == 'update') {
+                                          _showUpdateDialog(context, task); 
+                                        } else if (value == 'delete') {
+                                          _deleteTask(task.id!); 
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ),
             ],
@@ -357,12 +350,12 @@ class _DialScreenState extends State<DialScreen> {
   Future<void> _showAddDialog(BuildContext context) async {
     String title = '';
     String description = '';
-    TimeOfDay? time;
+    TimeOfDay? selectedTime; 
     bool isRelative = false;
     String? solarEvent;
     int? offsetMinutes;
     RepeatType repeatType = RepeatType.none;
-    List<int> selectedDays = []; 
+    List<int> selectedDays = [];
 
     await showDialog(
       context: context,
@@ -371,7 +364,7 @@ class _DialScreenState extends State<DialScreen> {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: AlertDialog(
-            backgroundColor: Colors.white.withOpacity(0.1), 
+            backgroundColor: Colors.white.withOpacity(0.1),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
               side: BorderSide(
@@ -402,11 +395,11 @@ class _DialScreenState extends State<DialScreen> {
                             isRelative = index == 1;
                           });
                         },
-                        color: Colors.white, 
-                        selectedColor: Colors.white, 
-                        fillColor: Colors.white.withOpacity(0.3), 
-                        borderColor: Colors.white.withOpacity(0.5), 
-                        selectedBorderColor: Colors.white, 
+                        color: Colors.white,
+                        selectedColor: Colors.white,
+                        fillColor: Colors.white.withOpacity(0.3),
+                        borderColor: Colors.white.withOpacity(0.5),
+                        selectedBorderColor: Colors.white,
                         borderRadius: BorderRadius.circular(15.0),
                         children: const <Widget>[
                           Padding(
@@ -464,13 +457,13 @@ class _DialScreenState extends State<DialScreen> {
                     if (!isRelative)
                       ElevatedButton(
                         onPressed: () async {
-                          final selectedTime = await showTimePicker(
+                          final time = await showTimePicker(
                             context: context,
-                            initialTime: TimeOfDay.now(),
+                            initialTime: selectedTime ?? TimeOfDay.now(),
                           );
-                          if (selectedTime != null) {
+                          if (time != null) {
                             setState(() {
-                              time = selectedTime;
+                              selectedTime = time;
                             });
                           }
                         },
@@ -483,7 +476,7 @@ class _DialScreenState extends State<DialScreen> {
                           side: BorderSide(color: Colors.white, width: 1),
                         ),
                         child: Text(
-                          time == null ? 'select time' : time!.format(context),
+                          selectedTime == null ? 'select time' : selectedTime!.format(context),
                           style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
                         ),
                       ),
@@ -496,10 +489,10 @@ class _DialScreenState extends State<DialScreen> {
                                 menuStyle: MenuStyle(
                                   shape: MaterialStateProperty.all(
                                     RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15), 
+                                      borderRadius: BorderRadius.circular(15),
                                     ),
                                   ),
-                                  backgroundColor: MaterialStateProperty.all(Colors.white.withOpacity(0.1)), 
+                                  backgroundColor: MaterialStateProperty.all(Colors.white.withOpacity(0.1)),
                                 ),
                               ),
                             ),
@@ -514,8 +507,8 @@ class _DialScreenState extends State<DialScreen> {
                                 filled: true,
                                 fillColor: Colors.white.withOpacity(0.3),
                               ),
-                              dropdownColor: Colors.transparent, 
-                              iconEnabledColor: Colors.white, 
+                              dropdownColor: Colors.transparent,
+                              iconEnabledColor: Colors.white,
                               style: const TextStyle(color: Colors.white),
                               value: solarEvent,
                               items: ['first light', 'dusk', 'sunrise', 'noon', 'sunset', 'last light', 'night']
@@ -565,10 +558,10 @@ class _DialScreenState extends State<DialScreen> {
                           menuStyle: MenuStyle(
                             shape: MaterialStateProperty.all(
                               RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(15), 
+                                borderRadius: BorderRadius.circular(15),
                               ),
                             ),
-                            backgroundColor: MaterialStateProperty.all(Colors.white.withOpacity(0.1)), 
+                            backgroundColor: MaterialStateProperty.all(Colors.white.withOpacity(0.1)),
                           ),
                         ),
                       ),
@@ -583,8 +576,8 @@ class _DialScreenState extends State<DialScreen> {
                           filled: true,
                           fillColor: Colors.white.withOpacity(0.3),
                         ),
-                        dropdownColor: Colors.transparent, 
-                        iconEnabledColor: Colors.white, 
+                        dropdownColor: Colors.transparent,
+                        iconEnabledColor: Colors.white,
                         style: const TextStyle(color: Colors.white),
                         value: repeatType,
                         items: RepeatType.values
@@ -606,7 +599,7 @@ class _DialScreenState extends State<DialScreen> {
                         onChanged: (value) {
                           setState(() {
                             repeatType = value!;
-                            selectedDays = []; 
+                            selectedDays = [];
                           });
                         },
                       ),
@@ -618,7 +611,7 @@ class _DialScreenState extends State<DialScreen> {
                           Wrap(
                             spacing: 8.0,
                             children: List<Widget>.generate(7, (int index) {
-                              final day = index + 1; 
+                              final day = index + 1;
                               final dayName = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index];
                               return FilterChip(
                                 label: Text(dayName),
@@ -663,14 +656,19 @@ class _DialScreenState extends State<DialScreen> {
                       finalRepeatOptions = RepeatOptions(type: repeatType, selectedDays: selectedDays);
                     }
 
-                    if (!isRelative && time != null) {
+                    if (!isRelative && selectedTime != null) {
+                      final now = DateTime.now();
+                      final dueDate = DateTime(now.year, now.month, now.day, selectedTime?.hour ?? 0, selectedTime?.minute ?? 0);
                       _addTask(
-                        Task(title: title, description: description, time: time!, repeatOptions: finalRepeatOptions),
+                        Task(title: title, description: description, dueDate: dueDate, repeatOptions: finalRepeatOptions),
                       );
                       Navigator.pop(context);
                     } else if (isRelative && solarEvent != null && offsetMinutes != null) {
+                      
+                      
+                      
                       _addTask(
-                        Task(title: title, description: description, isRelative: true, solarEvent: solarEvent, offsetMinutes: offsetMinutes, repeatOptions: finalRepeatOptions),
+                        Task(title: title, description: description, dueDate: DateTime.now(), isRelative: true, solarEvent: solarEvent, offsetMinutes: offsetMinutes, repeatOptions: finalRepeatOptions),
                       );
                       Navigator.pop(context);
                     }
@@ -695,15 +693,15 @@ class _DialScreenState extends State<DialScreen> {
     );
   }
 
-  Future<void> _showUpdateDialog(BuildContext context, int index) async {
-    String title = tasks[index].title;
-    String description = tasks[index].description;
-    TimeOfDay? time = tasks[index].time;
-    bool isRelative = tasks[index].isRelative;
-    String? solarEvent = tasks[index].solarEvent;
-    int? offsetMinutes = tasks[index].offsetMinutes;
-    RepeatType repeatType = tasks[index].repeatOptions?.type ?? RepeatType.none;
-    List<int> selectedDays = List.from(tasks[index].repeatOptions?.selectedDays ?? []);
+  Future<void> _showUpdateDialog(BuildContext context, Task taskToUpdate) async {
+    String title = taskToUpdate.title;
+    String description = taskToUpdate.description;
+    TimeOfDay? selectedTime = TimeOfDay.fromDateTime(taskToUpdate.dueDate); 
+    bool isRelative = taskToUpdate.isRelative;
+    String? solarEvent = taskToUpdate.solarEvent;
+    int? offsetMinutes = taskToUpdate.offsetMinutes;
+    RepeatType repeatType = taskToUpdate.repeatOptions?.type ?? RepeatType.none;
+    List<int> selectedDays = List.from(taskToUpdate.repeatOptions?.selectedDays ?? []);
 
     await showDialog(
       context: context,
@@ -712,7 +710,7 @@ class _DialScreenState extends State<DialScreen> {
         return BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: AlertDialog(
-            backgroundColor: Colors.white.withOpacity(0.1), 
+            backgroundColor: Colors.white.withOpacity(0.1),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
               side: BorderSide(
@@ -779,11 +777,11 @@ class _DialScreenState extends State<DialScreen> {
                             isRelative = index == 1;
                           });
                         },
-                        color: Colors.white, 
-                        selectedColor: Colors.white, 
-                        fillColor: Colors.white.withOpacity(0.3), 
-                        borderColor: Colors.white.withOpacity(0.5), 
-                        selectedBorderColor: Colors.white, 
+                        color: Colors.white,
+                        selectedColor: Colors.white,
+                        fillColor: Colors.white.withOpacity(0.3),
+                        borderColor: Colors.white.withOpacity(0.5),
+                        selectedBorderColor: Colors.white,
                         borderRadius: BorderRadius.circular(15.0),
                         children: const <Widget>[
                           Padding(
@@ -807,13 +805,13 @@ class _DialScreenState extends State<DialScreen> {
                     if (!isRelative)
                       ElevatedButton(
                         onPressed: () async {
-                          final selectedTime = await showTimePicker(
+                          final time = await showTimePicker(
                             context: context,
-                            initialTime: time ?? TimeOfDay.now(),
+                            initialTime: selectedTime ?? TimeOfDay.now(),
                           );
-                          if (selectedTime != null) {
+                          if (time != null) {
                             setState(() {
-                              time = selectedTime;
+                              selectedTime = time;
                             });
                           }
                         },
@@ -826,7 +824,7 @@ class _DialScreenState extends State<DialScreen> {
                           side: BorderSide(color: Colors.white, width: 1),
                         ),
                         child: Text(
-                          time == null ? 'select time' : time!.format(context),
+                          selectedTime == null ? 'select time' : selectedTime!.format(context),
                           style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
                         ),
                       ),
@@ -839,10 +837,10 @@ class _DialScreenState extends State<DialScreen> {
                                 menuStyle: MenuStyle(
                                   shape: MaterialStateProperty.all(
                                     RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(15), 
+                                      borderRadius: BorderRadius.circular(15),
                                     ),
                                   ),
-                                  backgroundColor: MaterialStateProperty.all(Colors.white.withOpacity(0.1)), 
+                                  backgroundColor: MaterialStateProperty.all(Colors.white.withOpacity(0.1)),
                                 ),
                               ),
                             ),
@@ -857,8 +855,8 @@ class _DialScreenState extends State<DialScreen> {
                                 filled: true,
                                 fillColor: Colors.white.withOpacity(0.3),
                               ),
-                              dropdownColor: Colors.transparent, 
-                              iconEnabledColor: Colors.white, 
+                              dropdownColor: Colors.transparent,
+                              iconEnabledColor: Colors.white,
                               style: const TextStyle(color: Colors.white),
                               value: solarEvent,
                               items: ['first light', 'dusk', 'sunrise', 'noon', 'sunset', 'last light', 'night']
@@ -914,8 +912,8 @@ class _DialScreenState extends State<DialScreen> {
                         filled: true,
                         fillColor: Colors.white.withOpacity(0.3),
                       ),
-                      dropdownColor: Colors.white.withOpacity(0.1), 
-                      iconEnabledColor: Colors.white, 
+                      dropdownColor: Colors.white.withOpacity(0.1),
+                      iconEnabledColor: Colors.white,
                       style: const TextStyle(color: Colors.white),
                       value: repeatType,
                       items: RepeatType.values
@@ -937,7 +935,7 @@ class _DialScreenState extends State<DialScreen> {
                       onChanged: (value) {
                         setState(() {
                           repeatType = value!;
-                          selectedDays = []; 
+                          selectedDays = [];
                         });
                       },
                     ),
@@ -948,7 +946,7 @@ class _DialScreenState extends State<DialScreen> {
                           Wrap(
                             spacing: 8.0,
                             children: List<Widget>.generate(7, (int index) {
-                              final day = index + 1; 
+                              final day = index + 1;
                               final dayName = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index];
                               return FilterChip(
                                 label: Text(dayName),
@@ -993,16 +991,38 @@ class _DialScreenState extends State<DialScreen> {
                       finalRepeatOptions = RepeatOptions(type: repeatType, selectedDays: selectedDays);
                     }
 
-                    if (!isRelative && time != null) {
+                    if (!isRelative && selectedTime != null) {
+                      final now = DateTime.now();
+                      final dueDate = DateTime(now.year, now.month, now.day, selectedTime?.hour ?? 0, selectedTime?.minute ?? 0);
                       _updateTask(
-                        index,
-                        Task(title: title, description: description, time: time!, repeatOptions: finalRepeatOptions),
+                        Task(
+                          id: taskToUpdate.id, 
+                          title: title,
+                          description: description,
+                          dueDate: dueDate,
+                          isCompleted: taskToUpdate.isCompleted, 
+                          timeInMinutes: taskToUpdate.timeInMinutes, 
+                          isRelative: false,
+                          solarEvent: null,
+                          offsetMinutes: null,
+                          repeatOptions: finalRepeatOptions,
+                        ),
                       );
                       Navigator.pop(context);
                     } else if (isRelative && solarEvent != null && offsetMinutes != null) {
                       _updateTask(
-                        index,
-                        Task(title: title, description: description, isRelative: true, solarEvent: solarEvent, offsetMinutes: offsetMinutes, repeatOptions: finalRepeatOptions),
+                        Task(
+                          id: taskToUpdate.id, 
+                          title: title,
+                          description: description,
+                          dueDate: taskToUpdate.dueDate, 
+                          isCompleted: taskToUpdate.isCompleted,
+                          timeInMinutes: taskToUpdate.timeInMinutes,
+                          isRelative: true,
+                          solarEvent: solarEvent,
+                          offsetMinutes: offsetMinutes,
+                          repeatOptions: finalRepeatOptions,
+                        ),
                       );
                       Navigator.pop(context);
                     }
