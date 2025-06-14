@@ -61,9 +61,53 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "2:1605140794853216812",
+      "lastPropertyId": "7:2258552147186283000",
+      "name": "Event",
+      "properties": [
+        {
+          "id": "1:8397671016909546584",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1092868754238887689",
+          "name": "title",
+          "type": 9
+        },
+        {
+          "id": "3:5726923690447389429",
+          "name": "note",
+          "type": 9
+        },
+        {
+          "id": "4:6915768372221703995",
+          "name": "timeStart",
+          "type": 9
+        },
+        {
+          "id": "5:6306992322482702600",
+          "name": "timeEnd",
+          "type": 9
+        },
+        {
+          "id": "6:8451483078526046849",
+          "name": "dateStart",
+          "type": 9
+        },
+        {
+          "id": "7:2258552147186283000",
+          "name": "dateEnd",
+          "type": 9
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "1:468449231362220322",
+  "lastEntityId": "2:1605140794853216812",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",

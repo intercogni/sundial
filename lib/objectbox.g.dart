@@ -14,6 +14,7 @@ import 'package:objectbox/internal.dart'
 import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
+import 'models/event.dart';
 import 'models/task.dart';
 
 export 'package:objectbox/objectbox.dart'; // so that callers only have to import this file
@@ -89,6 +90,58 @@ final _entities = <obx_int.ModelEntity>[
     relations: <obx_int.ModelRelation>[],
     backlinks: <obx_int.ModelBacklink>[],
   ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(2, 1605140794853216812),
+    name: 'Event',
+    lastPropertyId: const obx_int.IdUid(7, 2258552147186283000),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 8397671016909546584),
+        name: 'id',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 1092868754238887689),
+        name: 'title',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 5726923690447389429),
+        name: 'note',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 6915768372221703995),
+        name: 'timeStart',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 6306992322482702600),
+        name: 'timeEnd',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 8451483078526046849),
+        name: 'dateStart',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(7, 2258552147186283000),
+        name: 'dateEnd',
+        type: 9,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
 ];
 
 /// Shortcut for [obx.Store.new] that passes [getObjectBoxModel] and for Flutter
@@ -129,7 +182,7 @@ Future<obx.Store> openStore({
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(1, 468449231362220322),
+    lastEntityId: const obx_int.IdUid(2, 1605140794853216812),
     lastIndexId: const obx_int.IdUid(0, 0),
     lastRelationId: const obx_int.IdUid(0, 0),
     lastSequenceId: const obx_int.IdUid(0, 0),
@@ -236,6 +289,67 @@ obx_int.ModelDefinition getObjectBoxModel() {
         return object;
       },
     ),
+    Event: obx_int.EntityDefinition<Event>(
+      model: _entities[1],
+      toOneRelations: (Event object) => [],
+      toManyRelations: (Event object) => {},
+      getId: (Event object) => object.id,
+      setId: (Event object, int id) {
+        object.id = id;
+      },
+      objectToFB: (Event object, fb.Builder fbb) {
+        final titleOffset = fbb.writeString(object.title);
+        final noteOffset = object.note == null
+            ? null
+            : fbb.writeString(object.note!);
+        final timeStartOffset = fbb.writeString(object.timeStart);
+        final timeEndOffset = fbb.writeString(object.timeEnd);
+        final dateStartOffset = fbb.writeString(object.dateStart);
+        final dateEndOffset = fbb.writeString(object.dateEnd);
+        fbb.startTable(8);
+        fbb.addInt64(0, object.id);
+        fbb.addOffset(1, titleOffset);
+        fbb.addOffset(2, noteOffset);
+        fbb.addOffset(3, timeStartOffset);
+        fbb.addOffset(4, timeEndOffset);
+        fbb.addOffset(5, dateStartOffset);
+        fbb.addOffset(6, dateEndOffset);
+        fbb.finish(fbb.endTable());
+        return object.id;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final titleParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final noteParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 8);
+        final timeStartParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 10, '');
+        final timeEndParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 12, '');
+        final dateStartParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 14, '');
+        final dateEndParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 16, '');
+        final object = Event(
+          title: titleParam,
+          note: noteParam,
+          timeStart: timeStartParam,
+          timeEnd: timeEndParam,
+          dateStart: dateStartParam,
+          dateEnd: dateEndParam,
+        )..id = const fb.Int64Reader().vTableGet(buffer, rootOffset, 4, 0);
+
+        return object;
+      },
+    ),
   };
 
   return obx_int.ModelDefinition(model, bindings);
@@ -289,5 +403,41 @@ class Task_ {
   /// See [Task.repeatOptionsJson].
   static final repeatOptionsJson = obx.QueryStringProperty<Task>(
     _entities[0].properties[9],
+  );
+}
+
+/// [Event] entity fields to define ObjectBox queries.
+class Event_ {
+  /// See [Event.id].
+  static final id = obx.QueryIntegerProperty<Event>(_entities[1].properties[0]);
+
+  /// See [Event.title].
+  static final title = obx.QueryStringProperty<Event>(
+    _entities[1].properties[1],
+  );
+
+  /// See [Event.note].
+  static final note = obx.QueryStringProperty<Event>(
+    _entities[1].properties[2],
+  );
+
+  /// See [Event.timeStart].
+  static final timeStart = obx.QueryStringProperty<Event>(
+    _entities[1].properties[3],
+  );
+
+  /// See [Event.timeEnd].
+  static final timeEnd = obx.QueryStringProperty<Event>(
+    _entities[1].properties[4],
+  );
+
+  /// See [Event.dateStart].
+  static final dateStart = obx.QueryStringProperty<Event>(
+    _entities[1].properties[5],
+  );
+
+  /// See [Event.dateEnd].
+  static final dateEnd = obx.QueryStringProperty<Event>(
+    _entities[1].properties[6],
   );
 }
