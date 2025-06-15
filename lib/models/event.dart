@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Event {
   String? id;
@@ -51,8 +52,10 @@ class Event {
     return Event(
       title: title,
       note: description,
-      timeStart: '${startTime.hour}:${startTime.minute}',
-      timeEnd: '${endTime.hour}:${endTime.minute}',
+      timeStart:
+          '${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}',
+      timeEnd:
+          '${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}',
       dateStart: startDate.toIso8601String(),
       dateEnd: endDate.toIso8601String(),
     );
@@ -69,10 +72,11 @@ class Event {
     };
   }
 
-  factory Event.fromFirestore(Map<String, dynamic> data, String id) {
+  factory Event.fromFirestore(DocumentSnapshot<Map<String, dynamic>> snapshot) {
+    final data = snapshot.data()!;
     return Event(
-      id: id,
-      title: data['title'],
+      id: snapshot.id,
+      title: data['title'] ?? '',
       note: data['note'],
       timeStart: data['timeStart'],
       timeEnd: data['timeEnd'],

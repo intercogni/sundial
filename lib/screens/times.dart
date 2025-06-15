@@ -23,6 +23,7 @@ class _EventScreenState extends State<EventScreen> {
     final isEdit = event != null;
     final titleController = TextEditingController(text: event?.title ?? '');
     final notesController = TextEditingController(text: event?.note ?? '');
+
     DateTime? startDate = event?.startDate ?? DateTime.now();
     DateTime? endDate = event?.endDate ?? DateTime.now();
     TimeOfDay? startTime = event?.startTime;
@@ -84,81 +85,29 @@ class _EventScreenState extends State<EventScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  GestureDetector(
-                    onTap: () async {
-                      final pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: startDate ?? DateTime.now(),
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime(2100),
-                      );
-                      final pickedTime = await showTimePicker(
-                        context: context,
-                        initialTime: startTime ?? TimeOfDay.now(),
-                      );
-                      if (pickedDate != null && pickedTime != null) {
-                        startDate = pickedDate;
-                        startTime = pickedTime;
-                        (context as Element).markNeedsBuild();
-                      }
+                  _buildDateTimePicker(
+                    label: 'Start Date & Time',
+                    date: startDate,
+                    time: startTime,
+                    onDateTimeSelected: (d, t) {
+                      setState(() {
+                        startDate = d;
+                        startTime = t;
+                      });
                     },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 14,
-                        horizontal: 12,
-                      ),
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white),
-                      ),
-                      child: Text(
-                        (startDate != null && startTime != null)
-                            ? 'Start: ${_formatDateTime(startDate!, startTime!)}'
-                            : 'Start Date & Time',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
                   ),
                   const SizedBox(height: 12),
 
-                  GestureDetector(
-                    onTap: () async {
-                      final pickedDate = await showDatePicker(
-                        context: context,
-                        initialDate: endDate ?? DateTime.now(),
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime(2100),
-                      );
-                      final pickedTime = await showTimePicker(
-                        context: context,
-                        initialTime: endTime ?? TimeOfDay.now(),
-                      );
-                      if (pickedDate != null && pickedTime != null) {
-                        endDate = pickedDate;
-                        endTime = pickedTime;
-                        (context as Element).markNeedsBuild();
-                      }
+                  _buildDateTimePicker(
+                    label: 'End Date & Time',
+                    date: endDate,
+                    time: endTime,
+                    onDateTimeSelected: (d, t) {
+                      setState(() {
+                        endDate = d;
+                        endTime = t;
+                      });
                     },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 14,
-                        horizontal: 12,
-                      ),
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white),
-                      ),
-                      child: Text(
-                        (endDate != null && endTime != null)
-                            ? 'End: ${_formatDateTime(endDate!, endTime!)}'
-                            : 'End Date & Time',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
                   ),
 
                   const SizedBox(height: 20),
@@ -209,6 +158,49 @@ class _EventScreenState extends State<EventScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildDateTimePicker({
+    required String label,
+    required DateTime? date,
+    required TimeOfDay? time,
+    required Function(DateTime, TimeOfDay) onDateTimeSelected,
+  }) {
+    return GestureDetector(
+      onTap: () async {
+        final pickedDate = await showDatePicker(
+          context: context,
+          initialDate: date ?? DateTime.now(),
+          firstDate: DateTime(2000),
+          lastDate: DateTime(2100),
+        );
+        if (pickedDate != null) {
+          final pickedTime = await showTimePicker(
+            context: context,
+            initialTime: time ?? TimeOfDay.now(),
+          );
+
+          if (pickedTime != null) {
+            onDateTimeSelected(pickedDate, pickedTime);
+          }
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white),
+        ),
+        child: Text(
+          (date != null && time != null)
+              ? '$label: ${_formatDateTime(date, time)}'
+              : label,
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
     );
   }
 
@@ -279,12 +271,21 @@ class _EventScreenState extends State<EventScreen> {
       body: StreamBuilder<List<Event>>(
         stream: _eventStream,
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+          final events = snapshot.data ?? [];
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final events = snapshot.data!;
-          if (events.isEmpty) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+                style: const TextStyle(color: Colors.red),
+              ),
+            );
+          }
+
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(
               child: Text(
                 'No events yet',
@@ -300,24 +301,19 @@ class _EventScreenState extends State<EventScreen> {
               final event = events[index];
               event.restoreTimes();
 
-              final startTime = event.startTime!;
-              final endTime = event.endTime!;
-              final startDate = event.startDate!;
-              final endDate = event.endDate!;
-
               final startDateTime = DateTime(
-                startDate.year,
-                startDate.month,
-                startDate.day,
-                startTime.hour,
-                startTime.minute,
+                event.startDate!.year,
+                event.startDate!.month,
+                event.startDate!.day,
+                event.startTime!.hour,
+                event.startTime!.minute,
               );
               final endDateTime = DateTime(
-                endDate.year,
-                endDate.month,
-                endDate.day,
-                endTime.hour,
-                endTime.minute,
+                event.endDate!.year,
+                event.endDate!.month,
+                event.endDate!.day,
+                event.endTime!.hour,
+                event.endTime!.minute,
               );
 
               return Card(
@@ -339,7 +335,7 @@ class _EventScreenState extends State<EventScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${_formatDateTime(startDate, startTime)}  - ${_formatDateTime(endDate, endTime)}',
+                        '${_formatDateTime(event.startDate!, event.startTime!)} - ${_formatDateTime(event.endDate!, event.endTime!)}',
                         style: const TextStyle(color: Colors.white70),
                       ),
                       Text(
