@@ -3,7 +3,7 @@ import 'package:ming_cute_icons/ming_cute_icons.dart';
 import 'dart:ui';
 import 'package:sundial/screens/home.dart';
 import 'package:sundial/screens/dial.dart';
-// import 'package:sundial/screens/times.dart';
+import 'package:sundial/screens/times.dart';
 import 'package:sundial/screens/account.dart';
 
 class BottomTab extends StatefulWidget {
@@ -19,7 +19,7 @@ class _BottomTabState extends State<BottomTab> {
   final List<Widget> _widgetOptions = <Widget>[
     const HomeScreen(title: 'Sundial'),
     const DialScreen(),
-    // const EventScreen(),
+    const EventScreen(),
     const AccountScreen(),
   ];
 
@@ -104,11 +104,11 @@ class _BottomTabState extends State<BottomTab> {
                                 MingCuteIcons.mgc_alarm_2_fill,
                                 1,
                               ),
-                              // _buildTabItem(
-                              //   MingCuteIcons.mgc_inbox_line,
-                              //   MingCuteIcons.mgc_inbox_fill,
-                              //   2,
-                              // ),
+                              _buildTabItem(
+                                MingCuteIcons.mgc_inbox_line,
+                                MingCuteIcons.mgc_inbox_fill,
+                                2,
+                              ),
                               _buildTabItem(
                                 MingCuteIcons.mgc_settings_3_line,
                                 MingCuteIcons.mgc_settings_3_fill,

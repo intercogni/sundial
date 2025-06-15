@@ -1,35 +1,36 @@
-import 'package:sundial/models/event.dart';
-import 'package:sundial/objectbox.g.dart';
-import 'package:sundial/main.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/event.dart';
 
 class EventService {
-  late final Box<Event> _eventBox;
-  EventService() {
-    _eventBox = objectbox.store.box<Event>();
-  }
-  int addEvent(Event event) {
-    return _eventBox.put(event);
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final String _collection = 'events';
+
+  Future<void> addEvent(Event event) async {
+    await _db.collection(_collection).add(event.toFirestore());
   }
 
-  List<Event> getAllEvents() {
-    final events = _eventBox.getAll();
-    for (final e in events) {
-      e.restoreTimes();
+  Future<void> updateEvent(Event event) async {
+    if (event.id == null) throw Exception('Event ID null');
+    await _db.collection(_collection).doc(event.id).update(event.toFirestore());
+  }
+
+  Future<void> deleteEvent(String id) async {
+    await _db.collection(_collection).doc(id).delete();
+  }
+
+  Future<Event?> getEventById(String id) async {
+    final doc = await _db.collection(_collection).doc(id).get();
+    if (doc.exists) {
+      return Event.fromFirestore(doc.data()!, doc.id);
     }
-    return events;
+    return null;
   }
 
-  void updateEvent(Event event) {
-    _eventBox.put(event);
-  }
-
-  bool deleteEvent(int id) {
-    return _eventBox.remove(id);
-  }
-
-  Event? getEventById(int id) {
-    final e = _eventBox.get(id);
-    e?.restoreTimes();
-    return e;
+  Stream<List<Event>> getEventsStream() {
+    return _db.collection(_collection).snapshots().map((snapshot) {
+      return snapshot.docs
+          .map((doc) => Event.fromFirestore(doc.data(), doc.id))
+          .toList();
+    });
   }
 }

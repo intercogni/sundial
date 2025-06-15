@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sundial/models/event.dart';
-import 'package:sundial/objectbox.g.dart';
+import 'package:sundial/services/event_service.dart';
 
 class EventScreen extends StatefulWidget {
   const EventScreen({Key? key}) : super(key: key);
@@ -10,22 +10,13 @@ class EventScreen extends StatefulWidget {
 }
 
 class _EventScreenState extends State<EventScreen> {
-  late Box<Event> eventBox;
-  late List<Event> events;
+  final EventService _eventService = EventService();
+  late Stream<List<Event>> _eventStream;
 
   @override
   void initState() {
     super.initState();
-    eventBox = Provider.of<Store>(context, listen: false).box<Event>();
-    _loadEvents();
-  }
-
-  void _loadEvents() {
-    events = eventBox.getAll();
-    for (var event in events) {
-      event.restoreTimes();
-    }
-    setState(() {});
+    _eventStream = _eventService.getEventsStream();
   }
 
   void _showEventDialog({Event? event}) {
@@ -204,12 +195,9 @@ class _EventScreenState extends State<EventScreen> {
                             startDate: startDate!,
                             endDate: endDate!,
                           );
-                          if (isEdit) {
-                            newEvent.id = event!.id;
-                          }
-                          eventBox.put(newEvent);
+                          if (isEdit) newEvent.id = event!.id;
+                          _saveEvent(newEvent, isEdit: isEdit);
                           Navigator.pop(context);
-                          _loadEvents();
                         },
                         child: const Icon(Icons.check, color: Colors.white),
                       ),
@@ -224,15 +212,16 @@ class _EventScreenState extends State<EventScreen> {
     );
   }
 
-  void _deleteEvent(int index) {
-    final event = events[index];
-    eventBox.remove(event.id);
-    _loadEvents();
+  void _saveEvent(Event event, {bool isEdit = false}) {
+    if (isEdit) {
+      _eventService.updateEvent(event);
+    } else {
+      _eventService.addEvent(event);
+    }
   }
 
-  void _showUpdateDialog(BuildContext context, int index) {
-    final event = events[index];
-    _showEventDialog(event: event);
+  void _deleteEvent(String id) {
+    _eventService.deleteEvent(id);
   }
 
   String _formatDuration(DateTime start, DateTime end) {
@@ -240,18 +229,16 @@ class _EventScreenState extends State<EventScreen> {
     final minutes = duration.inMinutes;
     final hours = minutes ~/ 60;
     final remainingMinutes = minutes % 60;
-    if (hours > 0) {
-      return '${hours}h ${remainingMinutes}m';
-    } else {
-      return '${remainingMinutes}m';
-    }
+    return hours > 0
+        ? '${hours}h ${remainingMinutes}m'
+        : '${remainingMinutes}m';
   }
 
   String _formatDateTime(DateTime date, TimeOfDay time) {
     final hour = time.hourOfPeriod.toString().padLeft(2, '0');
     final minute = time.minute.toString().padLeft(2, '0');
     final period = time.period == DayPeriod.am ? 'AM' : 'PM';
-    return '${_monthName(date.month)} ${date.day}, ${date.year}';
+    return '${_monthName(date.month)} ${date.day}, ${date.year} at $hour:$minute $period';
   }
 
   String _monthName(int month) {
@@ -289,99 +276,126 @@ class _EventScreenState extends State<EventScreen> {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: events.length,
-        padding: const EdgeInsets.all(12),
-        itemBuilder: (context, index) {
-          final event = events[index];
-          final startTime = event.startTime!;
-          final endTime = event.endTime!;
-          final startDate = event.startDate!;
-          final endDate = event.endDate!;
+      body: StreamBuilder<List<Event>>(
+        stream: _eventStream,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          final startDateTime = DateTime(
-            startDate.year,
-            startDate.month,
-            startDate.day,
-            startTime.hour,
-            startTime.minute,
-          );
-          final endDateTime = DateTime(
-            endDate.year,
-            endDate.month,
-            endDate.day,
-            endTime.hour,
-            endTime.minute,
-          );
+          final events = snapshot.data!;
+          if (events.isEmpty) {
+            return const Center(
+              child: Text(
+                'No events yet',
+                style: TextStyle(color: Colors.white),
+              ),
+            );
+          }
 
-          return Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            color: Colors.white10,
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            child: ListTile(
-              title: Text(
-                event.title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: Colors.white,
+          return ListView.builder(
+            itemCount: events.length,
+            padding: const EdgeInsets.all(12),
+            itemBuilder: (context, index) {
+              final event = events[index];
+              event.restoreTimes();
+
+              final startTime = event.startTime!;
+              final endTime = event.endTime!;
+              final startDate = event.startDate!;
+              final endDate = event.endDate!;
+
+              final startDateTime = DateTime(
+                startDate.year,
+                startDate.month,
+                startDate.day,
+                startTime.hour,
+                startTime.minute,
+              );
+              final endDateTime = DateTime(
+                endDate.year,
+                endDate.month,
+                endDate.day,
+                endTime.hour,
+                endTime.minute,
+              );
+
+              return Card(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${_formatDateTime(startDate, startTime)}  - ${_formatDateTime(endDate, endTime)}',
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                  Text(
-                    _formatDuration(startDateTime, endDateTime),
-                    style: const TextStyle(color: Colors.white54),
-                  ),
-                  if (event.note != null && event.note!.isNotEmpty)
-                    Text(
-                      event.note!,
-                      style: const TextStyle(
-                        fontStyle: FontStyle.italic,
-                        color: Colors.white60,
-                      ),
+                color: Colors.white10,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                child: ListTile(
+                  title: Text(
+                    event.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.white,
                     ),
-                ],
-              ),
-              trailing: PopupMenuButton(
-                icon: const Icon(Icons.more_vert, color: Colors.white),
-                itemBuilder:
-                    (context) => [
-                      PopupMenuItem(
-                        value: 'update',
-                        child: Text(
-                          'Edit',
-                          style: TextStyle(
-                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${_formatDateTime(startDate, startTime)}  - ${_formatDateTime(endDate, endTime)}',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                      Text(
+                        _formatDuration(startDateTime, endDateTime),
+                        style: const TextStyle(color: Colors.white54),
+                      ),
+                      if (event.note != null && event.note!.isNotEmpty)
+                        Text(
+                          event.note!,
+                          style: const TextStyle(
+                            fontStyle: FontStyle.italic,
+                            color: Colors.white60,
                           ),
                         ),
-                      ),
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Text(
-                          'Delete',
-                          style: TextStyle(
-                            color: Theme.of(context).textTheme.bodyLarge?.color,
-                          ),
-                        ),
-                      ),
                     ],
-                onSelected: (value) {
-                  if (value == 'update') {
-                    _showUpdateDialog(context, index);
-                  } else if (value == 'delete') {
-                    _deleteEvent(index);
-                  }
-                },
-              ),
-            ),
+                  ),
+                  trailing: PopupMenuButton(
+                    icon: const Icon(Icons.more_vert, color: Colors.white),
+                    itemBuilder:
+                        (context) => [
+                          PopupMenuItem(
+                            value: 'update',
+                            child: Text(
+                              'Edit',
+                              style: TextStyle(
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyLarge?.color,
+                              ),
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'delete',
+                            child: Text(
+                              'Delete',
+                              style: TextStyle(
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyLarge?.color,
+                              ),
+                            ),
+                          ),
+                        ],
+                    onSelected: (value) {
+                      if (value == 'update') {
+                        _showEventDialog(event: event);
+                      } else if (value == 'delete') {
+                        _deleteEvent(event.id!);
+                      }
+                    },
+                  ),
+                ),
+              );
+            },
           );
         },
       ),
