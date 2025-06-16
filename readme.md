@@ -8,6 +8,17 @@
 - **Section 5, 25 Mar 2025:** `s05`
 - **Section 11, 19 May 2025:** `s11`
 
+<br />
+
+## Group 2
+| **Name** | **NRP** | **Class** |
+| --- | --- | --- |
+| **Areta Athayayumna Arwaa** | 5025221068 | Mobile Programming (I) |
+| **Franshel Tranetha** | 5025221083 | Mobile Programming (I) |
+| **Taib Izzat Samawi** | 5025221085 | Mobile Programming (I) |
+
+<br />
+
 # `sundial` *(work in progress 🛠️)*
 > *an intercogni app*
 
@@ -39,6 +50,7 @@ Manage your daily chores based on solar events.
 ### Demo Video
 [Click here to watch the demo video!](https://github.com/intercogni/sundial/blob/s05/docs/demo_video.webm)
 
+<!--  TASK SECTION -->
 <div align="center">
 	<h3 align="center">🏠 Tasks Screen</h3>
 	<em align="center">✨ This is the main screen displaying all tasks ✨</em> <br /> <br />
@@ -87,6 +99,51 @@ Manage your daily chores based on solar events.
 <br />
 <br />
 <br />
+
+<!--  EVENT SECTION -->
+<div align="center">
+	<h3 align="center">📅 Events List</h3>
+	<em align="center"> Users can view all scheduled duration events </em> <br /> <br />
+	<img src="docs/event_list.png" alt="Events List" width="25%">
+</div>
+<br />
+<br />
+<br />
+<div align="center">
+	<h3 align="center">➕ Add New Event</h3>
+	<em align="center"> Users can create new event</em> <br /> <br />
+	<img src="docs/add_event.png" alt="Add New Event" width="25%">
+</div>
+<br />
+<br />
+<br />
+<div align="center">
+	<h3 align="center">📝 Edit Event</h3>
+	<em align="center">Edit and update the details of the event</em> <br /> <br />
+	<img src="docs/edit_event.png" alt="Edit Event" width="25%">
+</div>
+<br />
+<br />
+<br />
+<div align="center">
+	<h3 align="center">🕘 Pick Event Duration</h3>
+	<em align="center">Setting the start-end date and time of the event</em> <br /> <br />
+	<img src="docs/select_event_date.png" alt="Pick Date" width="25%"> <br /> <br />
+	<img src="docs/select_event_time.png" alt="Pick Time" width="25%">
+</div>
+<br />
+<br />
+<br />
+<div align="center">
+	<h3 align="center">🗑️ Delete Event</h3>
+	<em align="center">Remove an event via the menu on the event card</em> <br /> <br />
+	<img src="docs/delete_event.png" alt="Delete Event" width="25%">
+</div>
+<br />
+<br />
+<br />
+
+<!--  AUTH SECTION -->
 <div align="center">
 	<h3 align="center">🔑 Login Screen</h3>
 	<em align="center">Users can log in to their accounts.</em> <br /> <br />
