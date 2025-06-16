@@ -190,6 +190,10 @@ class _DialScreenState extends State<DialScreen> {
                 child: StreamBuilder<List<Task>>(
                   stream: _taskService.getTasksStream(),
                   builder: (context, snapshot) {
+                    if (solarData == null) {
+                      return const Center(child: Text('Loading solar data...', style: TextStyle(color: Colors.white)));
+                    }
+
                     if (snapshot.hasError) {
                       return Center(child: Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.red)));
                     }
@@ -230,25 +234,25 @@ class _DialScreenState extends State<DialScreen> {
 
                             final dividers = <Widget>[];
 
-                            if (shouldDivideTask(previousTaskTime, taskTime, solarData.astronomicalTwilightBegin!)) {
+                            if (solarData.astronomicalTwilightBegin != null && shouldDivideTask(previousTaskTime, taskTime, solarData.astronomicalTwilightBegin!)) {
                               dividers.add(SundialDivider(time: solarData.astronomicalTwilightBegin!, label: 'first light'));
                             }
-                            if (shouldDivideTask(previousTaskTime, taskTime, solarData.nauticalTwilightBegin!)) {
+                            if (solarData.nauticalTwilightBegin != null && shouldDivideTask(previousTaskTime, taskTime, solarData.nauticalTwilightBegin!)) {
                               dividers.add(SundialDivider(time: solarData.nauticalTwilightBegin!, label: 'dusk'));
                             }
-                            if (shouldDivideTask(previousTaskTime, taskTime, solarData.sunrise!)) {
+                            if (solarData.sunrise != null && shouldDivideTask(previousTaskTime, taskTime, solarData.sunrise!)) {
                               dividers.add(SundialDivider(time: solarData.sunrise!, label: 'sunrise'));
                             }
-                            if (shouldDivideTask(previousTaskTime, taskTime, solarData.solarNoon!)) {
+                            if (solarData.solarNoon != null && shouldDivideTask(previousTaskTime, taskTime, solarData.solarNoon!)) {
                               dividers.add(SundialDivider(time: solarData.solarNoon!, label: 'noon'));
                             }
-                            if (shouldDivideTask(previousTaskTime, taskTime, solarData.sunset!)) {
+                            if (solarData.sunset != null && shouldDivideTask(previousTaskTime, taskTime, solarData.sunset!)) {
                               dividers.add(SundialDivider(time: solarData.sunset!, label: 'sunset'));
                             }
-                            if (shouldDivideTask(previousTaskTime, taskTime, solarData.nauticalTwilightEnd!)) {
+                            if (solarData.nauticalTwilightEnd != null && shouldDivideTask(previousTaskTime, taskTime, solarData.nauticalTwilightEnd!)) {
                               dividers.add(SundialDivider(time: solarData.nauticalTwilightEnd!, label: 'last light'));
                             }
-                            if (shouldDivideTask(previousTaskTime, taskTime, solarData.astronomicalTwilightEnd!)) {
+                            if (solarData.astronomicalTwilightEnd != null && shouldDivideTask(previousTaskTime, taskTime, solarData.astronomicalTwilightEnd!)) {
                               dividers.add(SundialDivider(time: solarData.astronomicalTwilightEnd!, label: 'night'));
                             }
 
