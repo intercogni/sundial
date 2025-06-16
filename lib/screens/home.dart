@@ -44,10 +44,10 @@ class _HomeScreenState extends State<HomeScreen> {
             dailyData.sunrise!.minute,
           );
           appointments.add(Appointment(
-            startTime: sunriseDateTime.subtract(const Duration(minutes: 2)),
-            endTime: sunriseDateTime.add(const Duration(minutes: 2)), 
-            subject: 'Sunrise',
-            color: Colors.orange,
+            startTime: sunriseDateTime.subtract(const Duration(minutes: 20)),
+            endTime: sunriseDateTime.add(const Duration(minutes: 20)), 
+            subject: '—sr—',
+            color: Colors.transparent,
           ));
         }
         if (dailyData.sunset != null) {
@@ -59,10 +59,10 @@ class _HomeScreenState extends State<HomeScreen> {
             dailyData.sunset!.minute,
           );
           appointments.add(Appointment(
-            startTime: sunsetDateTime.subtract(const Duration(minutes: 2)),
-            endTime: sunsetDateTime.add(const Duration(minutes: 2)), 
-            subject: 'Sunset',
-            color: Colors.deepOrange,
+            startTime: sunsetDateTime.subtract(const Duration(minutes: 20)),
+            endTime: sunsetDateTime.add(const Duration(minutes: 20)), 
+            subject: '—ss—',
+            color: Colors.transparent,
           ));
         }
       }
