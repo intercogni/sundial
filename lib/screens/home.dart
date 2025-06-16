@@ -241,7 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   startTime: taskDateTime.subtract(const Duration(minutes: 20)),
                   endTime: taskDateTime.add(const Duration(minutes: 20)), // Assuming a default duration for tasks
                   subject: task.title,
-                  color: _generateColorForTime(taskDateTime), // Randomize color based on time
+                  color: _generateColorForTime(task.title), // Randomize color based on task name
                   isAllDay: false,
                 ));
               }
@@ -256,10 +256,9 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Color _generateColorForTime(DateTime time) {
-    // Use a consistent seed for the Random generator based on the time of day (hour and minute)
-    // This ensures that tasks at the same time of day always get the same color, regardless of the date.
-    final int seed = time.hour * 60 + time.minute;
+  Color _generateColorForTime(String taskName) {
+    // Use the task name as the seed for the Random generator.
+    final int seed = taskName.hashCode;
     final Random random = Random(seed);
     return Color.fromARGB(
       255, // Alpha value
