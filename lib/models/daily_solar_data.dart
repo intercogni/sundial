@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class DailySolarData {
-  final String? id;
+  String? id;
   final DateTime date;
   final double latitude;
   final double longitude;

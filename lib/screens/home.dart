@@ -26,8 +26,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _fetchAndSetAppointments(DateTime startDate, DateTime endDate) {
     _dailySolarDataService.getDailySolarDataStream(startDate, endDate).listen((dailySolarDataList) {
-      final List<Appointment> appointments = [];
+      final Map<DateTime, DailySolarData> dailyDataMap = {};
       for (var dailyData in dailySolarDataList) {
+        // Use the date part only for grouping
+        final dateKey = DateTime(dailyData.date.year, dailyData.date.month, dailyData.date.day);
+        dailyDataMap[dateKey] = dailyData; // This will keep the latest entry for each date if duplicates exist
+      }
+
+      final List<Appointment> appointments = [];
+      for (var dailyData in dailyDataMap.values) {
         if (dailyData.sunrise != null) {
           final sunriseDateTime = DateTime(
             dailyData.date.year,

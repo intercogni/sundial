@@ -130,7 +130,6 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
       context: context,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365 * 5)), // 5 years in the future
-      initialDateRange: _selectedDateRange,
     );
     if (picked != null) {
       setState(() {
@@ -190,8 +189,6 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
               nauticalTwilightBegin: parsedSolarEvents['nautical_twilight_begin'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['nautical_twilight_begin']!) : null,
               nauticalTwilightEnd: parsedSolarEvents['nautical_twilight_end'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['nautical_twilight_end']!) : null,
             );
-
-            await dailySolarDataService.addDailySolarData(dailyData);
           } else {
             print('Failed to fetch solar data for ${currentDate.toLocal()}');
           }

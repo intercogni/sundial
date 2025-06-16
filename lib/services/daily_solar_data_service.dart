@@ -4,9 +4,18 @@ import 'package:sundial/models/daily_solar_data.dart';
 class DailySolarDataService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Add daily solar data
+  // Add or update daily solar data
   Future<void> addDailySolarData(DailySolarData dailySolarData) async {
-    await _firestore.collection('dailySolarData').add(dailySolarData.toFirestore());
+    final existingData = await getDailySolarDataForDate(dailySolarData.date);
+
+    if (existingData != null) {
+      // Data for this date already exists, update it
+      dailySolarData.id = existingData.id; // Set the ID for the update
+      await updateDailySolarData(dailySolarData);
+    } else {
+      // Data for this date does not exist, add new data
+      await _firestore.collection('dailySolarData').add(dailySolarData.toFirestore());
+    }
   }
 
   // Fetch daily solar data for a specific date
@@ -18,7 +27,6 @@ class DailySolarDataService {
         .collection('dailySolarData')
         .where('date', isGreaterThanOrEqualTo: startOfDay)
         .where('date', isLessThanOrEqualTo: endOfDay)
-        .limit(1)
         .get();
 
     if (querySnapshot.docs.isNotEmpty) {
@@ -48,5 +56,13 @@ class DailySolarDataService {
   // Delete daily solar data
   Future<void> deleteDailySolarData(String id) async {
     await _firestore.collection('dailySolarData').doc(id).delete();
+  }
+
+  // Delete all daily solar data
+  Future<void> deleteAllDailySolarData() async {
+    final querySnapshot = await _firestore.collection('dailySolarData').get();
+    for (final doc in querySnapshot.docs) {
+      await doc.reference.delete();
+    }
   }
 }

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/profile_pic_service.dart';
+import '../services/daily_solar_data_service.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -134,6 +135,17 @@ class AccountScreen extends StatelessWidget {
             title: const Text('Change Password'),
             onTap: () {
               _showChangePasswordDialog(context);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.delete_forever),
+            title: const Text('Delete All Solar Data'),
+            onTap: () async {
+              final dailySolarDataService = DailySolarDataService();
+              await dailySolarDataService.deleteAllDailySolarData();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('All daily solar data deleted.')),
+              );
             },
           ),
           ListTile(
