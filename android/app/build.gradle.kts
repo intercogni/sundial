@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
     id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
     // END: FlutterFire Configuration
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -40,6 +41,12 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+}
+
+dependencies {
+    implementation(platform("com.google.firebase:firebase-bom:33.1.1"))
+    implementation("com.google.firebase:firebase-crashlytics-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
 }
 
 flutter {
