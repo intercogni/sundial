@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/profile_pic_service.dart';
 
 class AccountScreen extends StatelessWidget {
@@ -140,6 +141,8 @@ class AccountScreen extends StatelessWidget {
             title: const Text('Log Out'),
             onTap: () async {
               await FirebaseAuth.instance.signOut();
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('isLoggedIn', false);
               Navigator.pushReplacementNamed(context, '/login');
             },
           ),

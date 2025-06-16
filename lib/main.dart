@@ -5,6 +5,7 @@ import 'package:sundial/widgets/bottom_tab.dart';
 import 'package:sundial/screens/login_screen.dart';
 import 'package:sundial/screens/register_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,17 +13,23 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  final prefs = await SharedPreferences.getInstance();
+  final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
   SolarData();
   runApp(
     ChangeNotifierProvider(
       create: (context) => SolarData(),
-      child: const SundialApp(),
+      child: SundialApp(isLoggedIn: isLoggedIn),
     ),
   );
 }
 
 class SundialApp extends StatelessWidget {
-  const SundialApp({super.key});
+  const SundialApp({super.key, required this.isLoggedIn});
+
+  final bool isLoggedIn;
 
   @override
   Widget build(BuildContext context) {

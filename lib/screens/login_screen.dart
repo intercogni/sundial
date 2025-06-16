@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:sundial/screens/home.dart'; 
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sundial/screens/home.dart';
 
 class Glassmorphism extends StatelessWidget {
   final double blur;
@@ -55,6 +56,9 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
       
       if (mounted) {
         Navigator.of(context).pushReplacementNamed('/home');
