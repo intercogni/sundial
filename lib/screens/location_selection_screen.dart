@@ -21,7 +21,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
   final TextEditingController _searchController = TextEditingController();
   String? _selectedLocationName;
 
-  // Replace with your actual Google Places API key
+  
   final String googleApiKey = "AIzaSyDI_pjx6Apfy9FsoFHTDJRWVX2xv9Ay28E";
 
   @override
@@ -71,7 +71,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
           Expanded(
             child: GoogleMap(
               initialCameraPosition: const CameraPosition(
-                target: LatLng(0, 0), // Default to center of the world
+                target: LatLng(0, 0), 
                 zoom: 2,
               ),
               onMapCreated: (controller) {
@@ -129,7 +129,7 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
     final picked = await showDateRangePicker(
       context: context,
       firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365 * 5)), // 5 years in the future
+      lastDate: DateTime.now().add(const Duration(days: 365 * 5)), 
     );
     if (picked != null) {
       setState(() {

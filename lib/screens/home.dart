@@ -21,16 +21,16 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchAndSetAppointments(DateTime.now(), DateTime.now().add(const Duration(days: 7))); // Fetch initial data for a week
+    _fetchAndSetAppointments(DateTime.now(), DateTime.now().add(const Duration(days: 7))); 
   }
 
   void _fetchAndSetAppointments(DateTime startDate, DateTime endDate) {
     _dailySolarDataService.getDailySolarDataStream(startDate, endDate).listen((dailySolarDataList) {
       final Map<DateTime, DailySolarData> dailyDataMap = {};
       for (var dailyData in dailySolarDataList) {
-        // Use the date part only for grouping
+        
         final dateKey = DateTime(dailyData.date.year, dailyData.date.month, dailyData.date.day);
-        dailyDataMap[dateKey] = dailyData; // This will keep the latest entry for each date if duplicates exist
+        dailyDataMap[dateKey] = dailyData; 
       }
 
       final List<Appointment> appointments = [];
@@ -45,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
           appointments.add(Appointment(
             startTime: sunriseDateTime.subtract(const Duration(minutes: 2)),
-            endTime: sunriseDateTime.add(const Duration(minutes: 2)), // Represent as a short event
+            endTime: sunriseDateTime.add(const Duration(minutes: 2)), 
             subject: 'Sunrise',
             color: Colors.orange,
           ));
@@ -60,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
           );
           appointments.add(Appointment(
             startTime: sunsetDateTime.subtract(const Duration(minutes: 2)),
-            endTime: sunsetDateTime.add(const Duration(minutes: 2)), // Represent as a short event
+            endTime: sunsetDateTime.add(const Duration(minutes: 2)), 
             subject: 'Sunset',
             color: Colors.deepOrange,
           ));
@@ -88,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               );
               if (result != null) {
-                // Handle the result from LocationSelectionScreen
+                
                 final selectedLocation = result['location'];
                 final selectedDateRange = result['dateRange'];
                 final selectedLocationName = result['locationName'];
