@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'dart:math'; // Import for Random
+import 'dart:math'; 
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:sundial/screens/location_selection_screen.dart';
@@ -80,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _fetchAndSetAppointments(DateTime startDate, DateTime endDate) {
     final List<Appointment> combinedAppointments = [];
 
-    // Fetch solar data appointments
+    
     _dailySolarDataService.getDailySolarDataStream(startDate, endDate).listen((dailySolarDataList) {
       final Map<DateTime, DailySolarData> dailyDataMap = {};
       for (var dailyData in dailySolarDataList) {
@@ -208,18 +208,18 @@ class _HomeScreenState extends State<HomeScreen> {
             bool shouldAdd = false;
 
             if (task.repeatOptions == null || task.repeatOptions!.type == RepeatType.none) {
-              // For non-repeating tasks, add only if the due date matches the current date
+              
               if (task.dueDate.year == currentDate.year &&
                   task.dueDate.month == currentDate.month &&
                   task.dueDate.day == currentDate.day) {
                 shouldAdd = true;
               }
             } else if (task.repeatOptions!.type == RepeatType.daily) {
-              // For daily repeating tasks, add for every day within the range
+              
               shouldAdd = true;
             } else if (task.repeatOptions!.type == RepeatType.weekly) {
-              // For weekly repeating tasks, add if the current day's weekday is selected
-              // DateTime.monday is 1, Sunday is 7. selectedDays are 1-7.
+              
+              
               if (task.repeatOptions!.selectedDays.contains(currentDate.weekday)) {
                 shouldAdd = true;
               }
@@ -239,9 +239,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 taskAppointments.add(Appointment(
                   startTime: taskDateTime.subtract(const Duration(minutes: 20)),
-                  endTime: taskDateTime.add(const Duration(minutes: 20)), // Assuming a default duration for tasks
+                  endTime: taskDateTime.add(const Duration(minutes: 20)), 
                   subject: task.title,
-                  color: _generateColorForTime(task.title), // Randomize color based on task name
+                  color: _generateColorForTime(task.title), 
                   isAllDay: false,
                 ));
               }
@@ -257,14 +257,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Color _generateColorForTime(String taskName) {
-    // Use the task name as the seed for the Random generator.
+    
     final int seed = taskName.hashCode;
     final Random random = Random(seed);
     return Color.fromARGB(
-      255, // Alpha value
-      random.nextInt(200) + 10, // Red (avoid very dark colors)
-      random.nextInt(200) + 10, // Green
-      random.nextInt(200) + 10, // Blue
+      255, 
+      random.nextInt(200) + 10, 
+      random.nextInt(200) + 10, 
+      random.nextInt(200) + 10, 
     );
   }
 

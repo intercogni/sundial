@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_places_flutter/google_places_flutter.dart';
 import 'package:google_places_flutter/model/prediction.dart';
+import 'package:ming_cute_icons/ming_cute_icons.dart';
 import 'package:sundial/services/daily_solar_data_service.dart';
 import 'package:sundial/models/daily_solar_data.dart';
 import 'package:sundial/functions/solar_api.dart';
@@ -167,11 +168,6 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Location Setup'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
       body: Stack(
         children: [
           Expanded(
@@ -201,15 +197,43 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
             ),
           ),
           Positioned(
-            top: 16.0,
+            top: 50.0,
+            left: 8.0,
+            right: 16.0,
+            child:  Row(
+              children: [
+                IconButton(
+                    icon: const Icon(
+                    MingCuteIcons.mgc_arrow_left_fill,
+                    size: 28.0,
+                    ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                const Text(
+                  'Location Setup',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            top: 105.0,
             left: 16.0,
             right: 16.0,
             child: GooglePlaceAutoCompleteTextField(
               textEditingController: _searchController,
               googleAPIKey: googleApiKey,
-              inputDecoration: const InputDecoration(
+              inputDecoration: InputDecoration(
                 hintText: "Search Location",
-                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                filled: true,
+                fillColor: Colors.transparent,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                  borderSide: BorderSide(color: Colors.grey.shade400),
+                ),
               ),
               debounceTime: 800,
               isLatLngRequired: true,

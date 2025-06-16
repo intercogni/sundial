@@ -109,18 +109,18 @@ class _BottomTabState extends State<BottomTab> {
                             elevation: 0,
                             items: <BottomNavigationBarItem>[
                               _buildTabItem(
-                                MingCuteIcons.mgc_building_6_line,
-                                MingCuteIcons.mgc_building_6_fill,
+                                MingCuteIcons.mgc_calendar_month_line,
+                                MingCuteIcons.mgc_calendar_month_fill,
                                 0,
                               ),
                               _buildTabItem(
-                                MingCuteIcons.mgc_alarm_2_line,
-                                MingCuteIcons.mgc_alarm_2_fill,
+                                MingCuteIcons.mgc_task_2_line,
+                                MingCuteIcons.mgc_task_2_fill,
                                 1,
                               ),
                               _buildTabItem(
-                                MingCuteIcons.mgc_inbox_line,
-                                MingCuteIcons.mgc_inbox_fill,
+                                MingCuteIcons.mgc_briefcase_2_line,
+                                MingCuteIcons.mgc_briefcase_2_fill,
                                 2,
                               ),
                               _buildTabItem(

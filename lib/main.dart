@@ -35,10 +35,10 @@ class SundialApp extends StatelessWidget {
         fontFamily: 'GothamRounded',
         brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 216, 185, 255),
+          seedColor: const Color.fromARGB(255, 229, 208, 255),
           brightness: Brightness.dark,
-          primary: const Color.fromARGB(255, 216, 185, 255),
-          secondary: const Color.fromARGB(255, 216, 185, 255),
+          primary: const Color.fromARGB(255, 229, 208, 255),
+          secondary: const Color.fromARGB(255, 229, 208, 255),
         ),
         useMaterial3: true,
       ),
