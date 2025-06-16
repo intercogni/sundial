@@ -16,6 +16,54 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final DailySolarDataService _dailySolarDataService = DailySolarDataService();
+  List<Appointment> _appointments = <Appointment>[];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAndSetAppointments(DateTime.now(), DateTime.now().add(const Duration(days: 7))); // Fetch initial data for a week
+  }
+
+  void _fetchAndSetAppointments(DateTime startDate, DateTime endDate) {
+    _dailySolarDataService.getDailySolarDataStream(startDate, endDate).listen((dailySolarDataList) {
+      final List<Appointment> appointments = [];
+      for (var dailyData in dailySolarDataList) {
+        if (dailyData.sunrise != null) {
+          final sunriseDateTime = DateTime(
+            dailyData.date.year,
+            dailyData.date.month,
+            dailyData.date.day,
+            dailyData.sunrise!.hour,
+            dailyData.sunrise!.minute,
+          );
+          appointments.add(Appointment(
+            startTime: sunriseDateTime.subtract(const Duration(minutes: 2)),
+            endTime: sunriseDateTime.add(const Duration(minutes: 2)), // Represent as a short event
+            subject: 'Sunrise',
+            color: Colors.orange,
+          ));
+        }
+        if (dailyData.sunset != null) {
+          final sunsetDateTime = DateTime(
+            dailyData.date.year,
+            dailyData.date.month,
+            dailyData.date.day,
+            dailyData.sunset!.hour,
+            dailyData.sunset!.minute,
+          );
+          appointments.add(Appointment(
+            startTime: sunsetDateTime.subtract(const Duration(minutes: 2)),
+            endTime: sunsetDateTime.add(const Duration(minutes: 2)), // Represent as a short event
+            subject: 'Sunset',
+            color: Colors.deepOrange,
+          ));
+        }
+      }
+      setState(() {
+        _appointments = appointments;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -127,8 +175,26 @@ class _HomeScreenState extends State<HomeScreen> {
           initialDisplayDate: DateTime.now(),
           todayHighlightColor: Colors.green.shade300,
           headerHeight: 50,
+          dataSource: _getCalendarDataSource(),
+          onViewChanged: (ViewChangedDetails details) {
+            if (details.visibleDates.isNotEmpty) {
+              final startDate = details.visibleDates.first;
+              final endDate = details.visibleDates.last;
+              _fetchAndSetAppointments(startDate, endDate);
+            }
+          },
         ),
       ),
     );
+  }
+
+  _AppointmentDataSource _getCalendarDataSource() {
+    return _AppointmentDataSource(_appointments);
+  }
+}
+
+class _AppointmentDataSource extends CalendarDataSource {
+  _AppointmentDataSource(List<Appointment> source) {
+    appointments = source;
   }
 }
