@@ -73,7 +73,14 @@ class _BottomTabState extends State<BottomTab> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(90.0),
+                    borderRadius: _selectedIndex == 0
+                              ? const BorderRadius.only(
+                                  topRight: Radius.circular(20.0),
+                                  topLeft: Radius.circular(90.0),
+                                  bottomLeft: Radius.circular(90.0),
+                                  bottomRight: Radius.circular(90.0),
+                                )
+                              : BorderRadius.circular(90.0),
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                       child: Container(
@@ -83,7 +90,14 @@ class _BottomTabState extends State<BottomTab> {
                             color: Colors.white.withOpacity(0.4),
                             width: 1.5,
                           ),
-                          borderRadius: BorderRadius.circular(90.0),
+                          borderRadius: _selectedIndex == 0
+                              ? const BorderRadius.only(
+                                  topRight: Radius.circular(20.0),
+                                  topLeft: Radius.circular(90.0),
+                                  bottomLeft: Radius.circular(90.0),
+                                  bottomRight: Radius.circular(90.0),
+                                )
+                              : BorderRadius.circular(90.0),
                         ),
                         child: Theme(
                           data: Theme.of(context).copyWith(
