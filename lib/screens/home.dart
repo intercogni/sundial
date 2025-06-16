@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'dart:math'; // Import for Random
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:sundial/screens/location_selection_screen.dart';
 import 'package:sundial/services/daily_solar_data_service.dart';
 import 'package:sundial/models/daily_solar_data.dart';
 import 'package:sundial/functions/solar_api.dart';
+import 'package:sundial/models/task.dart';
+import 'package:sundial/services/task_firestore_service.dart';
+import 'package:sundial/models/solar_data.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key, required this.title}) : super(key: key);
@@ -17,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final DailySolarDataService _dailySolarDataService = DailySolarDataService();
+  final TaskFirestoreService _taskService = TaskFirestoreService();
   List<Appointment> _appointments = <Appointment>[];
 
   @override
@@ -25,16 +30,65 @@ class _HomeScreenState extends State<HomeScreen> {
     _fetchAndSetAppointments(DateTime.now(), DateTime.now().add(const Duration(days: 7))); 
   }
 
+  TimeOfDay? _getTaskTime(Task task, DailySolarData? solarData) {
+    if (!task.isRelative) {
+      return TimeOfDay.fromDateTime(task.dueDate);
+    }
+
+    if (task.solarEvent == null || task.offsetMinutes == null || solarData == null) {
+      return null;
+    }
+
+    TimeOfDay? solarEventTime;
+    switch (task.solarEvent) {
+      case 'first light':
+        solarEventTime = solarData.astronomicalTwilightBegin;
+        break;
+      case 'dusk':
+        solarEventTime = solarData.nauticalTwilightBegin;
+        break;
+      case 'sunrise':
+        solarEventTime = solarData.sunrise;
+        break;
+      case 'noon':
+        solarEventTime = solarData.solarNoon;
+        break;
+      case 'sunset':
+        solarEventTime = solarData.sunset;
+        break;
+      case 'last light':
+        solarEventTime = solarData.nauticalTwilightEnd;
+        break;
+      case 'night':
+        solarEventTime = solarData.astronomicalTwilightEnd;
+        break;
+      default:
+        return null;
+    }
+
+    if (solarEventTime == null) {
+      return null;
+    }
+
+    final totalMinutes = solarEventTime.hour * 60 + solarEventTime.minute + task.offsetMinutes!;
+    final hour = totalMinutes ~/ 60;
+    final minute = totalMinutes % 60;
+
+    return TimeOfDay(hour: hour % 24, minute: minute);
+  }
+
   void _fetchAndSetAppointments(DateTime startDate, DateTime endDate) {
+    final List<Appointment> combinedAppointments = [];
+
+    // Fetch solar data appointments
     _dailySolarDataService.getDailySolarDataStream(startDate, endDate).listen((dailySolarDataList) {
       final Map<DateTime, DailySolarData> dailyDataMap = {};
       for (var dailyData in dailySolarDataList) {
-        
         final dateKey = DateTime(dailyData.date.year, dailyData.date.month, dailyData.date.day);
-        dailyDataMap[dateKey] = dailyData; 
+        dailyDataMap[dateKey] = dailyData;
       }
 
-      final List<Appointment> appointments = [];
+      final List<Appointment> solarAppointments = [];
       for (var dailyData in dailyDataMap.values) {
         if (dailyData.astronomicalTwilightBegin != null) {
           final astronomicalTwilightBeginDateTime = DateTime(
@@ -44,9 +98,9 @@ class _HomeScreenState extends State<HomeScreen> {
             dailyData.astronomicalTwilightBegin!.hour,
             dailyData.astronomicalTwilightBegin!.minute,
           );
-          appointments.add(Appointment(
-            startTime: astronomicalTwilightBeginDateTime.subtract(const Duration(minutes:19)),
-            endTime: astronomicalTwilightBeginDateTime.add(const Duration(minutes:19)),
+          solarAppointments.add(Appointment(
+            startTime: astronomicalTwilightBeginDateTime.subtract(const Duration(minutes: 19)),
+            endTime: astronomicalTwilightBeginDateTime.add(const Duration(minutes: 19)),
             subject: 'fl—',
             color: Colors.transparent,
           ));
@@ -59,9 +113,9 @@ class _HomeScreenState extends State<HomeScreen> {
             dailyData.nauticalTwilightBegin!.hour,
             dailyData.nauticalTwilightBegin!.minute,
           );
-          appointments.add(Appointment(
-            startTime: nauticalTwilightBeginDateTime.subtract(const Duration(minutes:19)),
-            endTime: nauticalTwilightBeginDateTime.add(const Duration(minutes:19)),
+          solarAppointments.add(Appointment(
+            startTime: nauticalTwilightBeginDateTime.subtract(const Duration(minutes: 19)),
+            endTime: nauticalTwilightBeginDateTime.add(const Duration(minutes: 19)),
             subject: 'ds—',
             color: Colors.transparent,
           ));
@@ -74,9 +128,9 @@ class _HomeScreenState extends State<HomeScreen> {
             dailyData.sunrise!.hour,
             dailyData.sunrise!.minute,
           );
-          appointments.add(Appointment(
-            startTime: sunriseDateTime.subtract(const Duration(minutes:19)),
-            endTime: sunriseDateTime.add(const Duration(minutes:19)), 
+          solarAppointments.add(Appointment(
+            startTime: sunriseDateTime.subtract(const Duration(minutes: 19)),
+            endTime: sunriseDateTime.add(const Duration(minutes: 19)),
             subject: 'sr—',
             color: Colors.transparent,
           ));
@@ -89,9 +143,9 @@ class _HomeScreenState extends State<HomeScreen> {
             dailyData.solarNoon!.hour,
             dailyData.solarNoon!.minute,
           );
-          appointments.add(Appointment(
-            startTime: solarNoonDateTime.subtract(const Duration(minutes:19)),
-            endTime: solarNoonDateTime.add(const Duration(minutes:19)),
+          solarAppointments.add(Appointment(
+            startTime: solarNoonDateTime.subtract(const Duration(minutes: 19)),
+            endTime: solarNoonDateTime.add(const Duration(minutes: 19)),
             subject: 'sn—',
             color: Colors.transparent,
           ));
@@ -104,9 +158,9 @@ class _HomeScreenState extends State<HomeScreen> {
             dailyData.sunset!.hour,
             dailyData.sunset!.minute,
           );
-          appointments.add(Appointment(
-            startTime: sunsetDateTime.subtract(const Duration(minutes:19)),
-            endTime: sunsetDateTime.add(const Duration(minutes:19)),
+          solarAppointments.add(Appointment(
+            startTime: sunsetDateTime.subtract(const Duration(minutes: 19)),
+            endTime: sunsetDateTime.add(const Duration(minutes: 19)),
             subject: 'ss—',
             color: Colors.transparent,
           ));
@@ -119,9 +173,9 @@ class _HomeScreenState extends State<HomeScreen> {
             dailyData.nauticalTwilightEnd!.hour,
             dailyData.nauticalTwilightEnd!.minute,
           );
-          appointments.add(Appointment(
-            startTime: nauticalTwilightEndDateTime.subtract(const Duration(minutes:19)),
-            endTime: nauticalTwilightEndDateTime.add(const Duration(minutes:19)),
+          solarAppointments.add(Appointment(
+            startTime: nauticalTwilightEndDateTime.subtract(const Duration(minutes: 19)),
+            endTime: nauticalTwilightEndDateTime.add(const Duration(minutes: 19)),
             subject: 'll—',
             color: Colors.transparent,
           ));
@@ -134,18 +188,85 @@ class _HomeScreenState extends State<HomeScreen> {
             dailyData.astronomicalTwilightEnd!.hour,
             dailyData.astronomicalTwilightEnd!.minute,
           );
-          appointments.add(Appointment(
-            startTime: astronomicalTwilightEndDateTime.subtract(const Duration(minutes:19)),
-            endTime: astronomicalTwilightEndDateTime.add(const Duration(minutes:19)),
+          solarAppointments.add(Appointment(
+            startTime: astronomicalTwilightEndDateTime.subtract(const Duration(minutes: 19)),
+            endTime: astronomicalTwilightEndDateTime.add(const Duration(minutes: 19)),
             subject: 'nh—',
             color: Colors.transparent,
           ));
         }
       }
-      setState(() {
-        _appointments = appointments;
+      combinedAppointments.addAll(solarAppointments);
+
+      _taskService.getTasksStream().listen((tasks) {
+        final List<Appointment> taskAppointments = [];
+        for (var i = 0; i <= endDate.difference(startDate).inDays; i++) {
+          final currentDate = startDate.add(Duration(days: i));
+          final DailySolarData? solarDataForCurrentDate = dailyDataMap[DateTime(currentDate.year, currentDate.month, currentDate.day)];
+
+          for (var task in tasks) {
+            bool shouldAdd = false;
+
+            if (task.repeatOptions == null || task.repeatOptions!.type == RepeatType.none) {
+              // For non-repeating tasks, add only if the due date matches the current date
+              if (task.dueDate.year == currentDate.year &&
+                  task.dueDate.month == currentDate.month &&
+                  task.dueDate.day == currentDate.day) {
+                shouldAdd = true;
+              }
+            } else if (task.repeatOptions!.type == RepeatType.daily) {
+              // For daily repeating tasks, add for every day within the range
+              shouldAdd = true;
+            } else if (task.repeatOptions!.type == RepeatType.weekly) {
+              // For weekly repeating tasks, add if the current day's weekday is selected
+              // DateTime.monday is 1, Sunday is 7. selectedDays are 1-7.
+              if (task.repeatOptions!.selectedDays.contains(currentDate.weekday)) {
+                shouldAdd = true;
+              }
+            }
+
+            if (shouldAdd) {
+              final TimeOfDay? taskTime = _getTaskTime(task, solarDataForCurrentDate);
+
+              if (taskTime != null) {
+                final taskDateTime = DateTime(
+                  currentDate.year,
+                  currentDate.month,
+                  currentDate.day,
+                  taskTime.hour,
+                  taskTime.minute,
+                );
+
+                taskAppointments.add(Appointment(
+                  startTime: taskDateTime.subtract(const Duration(minutes: 20)),
+                  endTime: taskDateTime.add(const Duration(minutes: 20)), // Assuming a default duration for tasks
+                  subject: task.title,
+                  color: _generateColorForTime(taskDateTime), // Randomize color based on time
+                  isAllDay: false,
+                ));
+              }
+            }
+          }
+        }
+        combinedAppointments.addAll(taskAppointments);
+        setState(() {
+          _appointments = combinedAppointments;
+        });
       });
     });
+  }
+
+  Color _generateColorForTime(DateTime time) {
+    // Use a consistent seed for the Random generator based on the time of day (hour and minute)
+    // This ensures that tasks at the same time of day always get the same color, regardless of the date.
+    final int seed = time.hour * 60 + time.minute;
+    final Random random = Random(seed);
+    return Color.fromARGB(
+      255, // Alpha value
+      random.nextInt(200) + 10, // Red (avoid very dark colors)
+      random.nextInt(200) + 10, // Green
+      random.nextInt(200) + 10, // Blue
+    );
   }
 
   @override
@@ -162,50 +283,58 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-        child: SfCalendar(
-          view: CalendarView.week,
-          monthViewSettings: const MonthViewSettings(
-            showAgenda: true,
-            agendaStyle: AgendaStyle(
-              backgroundColor: Colors.transparent,
-              appointmentTextStyle: TextStyle(color: Colors.black),
-              dateTextStyle: TextStyle(color: Colors.black),
-              dayTextStyle: TextStyle(color: Colors.black),
+        child: Column(
+          children: [
+            const SizedBox(height: 50),
+            Expanded(
+              child: SfCalendar(
+                view: CalendarView.week,
+                monthViewSettings: const MonthViewSettings(
+                  showAgenda: true,
+                  agendaStyle: AgendaStyle(
+                    backgroundColor: Colors.transparent,
+                    appointmentTextStyle: TextStyle(color: Colors.black),
+                    dateTextStyle: TextStyle(color: Colors.black),
+                    dayTextStyle: TextStyle(color: Colors.black),
+                  ),
+                ),
+                headerStyle: const CalendarHeaderStyle(
+                  backgroundColor: Colors.transparent,
+                  textAlign: TextAlign.center,
+                  textStyle: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                viewHeaderStyle: const ViewHeaderStyle(
+                  dayTextStyle: TextStyle(color: Colors.white),
+                ),
+                todayTextStyle: const TextStyle(color: Colors.white),
+                cellBorderColor: Colors.transparent,
+                backgroundColor: Colors.transparent,
+                selectionDecoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.3),
+                  border: Border.all(color: Colors.white, width: 2),
+                  borderRadius: const BorderRadius.all(Radius.circular(5)),
+                  shape: BoxShape.rectangle,
+                ),
+                initialSelectedDate: DateTime.now(),
+                initialDisplayDate: DateTime.now(),
+                todayHighlightColor: Colors.green.shade300,
+                headerHeight: 50,
+                dataSource: _getCalendarDataSource(),
+                onViewChanged: (ViewChangedDetails details) {
+                  if (details.visibleDates.isNotEmpty) {
+                    final startDate = details.visibleDates.first;
+                    final endDate = details.visibleDates.last;
+                    _fetchAndSetAppointments(startDate, endDate);
+                  }
+                },
+              ),
             ),
-          ),
-          headerStyle: const CalendarHeaderStyle(
-            backgroundColor: Colors.transparent,
-            textAlign: TextAlign.center,
-            textStyle: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          viewHeaderStyle: const ViewHeaderStyle(
-            dayTextStyle: TextStyle(color: Colors.white),
-          ),
-          todayTextStyle: const TextStyle(color: Colors.white),
-          cellBorderColor: Colors.transparent,
-          backgroundColor: Colors.transparent,
-          selectionDecoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.3),
-            border: Border.all(color: Colors.white, width: 2),
-            borderRadius: const BorderRadius.all(Radius.circular(5)),
-            shape: BoxShape.rectangle,
-          ),
-          initialSelectedDate: DateTime.now(),
-          initialDisplayDate: DateTime.now(),
-          todayHighlightColor: Colors.green.shade300,
-          headerHeight: 50,
-          dataSource: _getCalendarDataSource(),
-          onViewChanged: (ViewChangedDetails details) {
-            if (details.visibleDates.isNotEmpty) {
-              final startDate = details.visibleDates.first;
-              final endDate = details.visibleDates.last;
-              _fetchAndSetAppointments(startDate, endDate);
-            }
-          },
+            const SizedBox(height: 110),
+          ],
         ),
       ),
       floatingActionButton: Padding(
@@ -221,7 +350,7 @@ class _HomeScreenState extends State<HomeScreen> {
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 234, 151, 255).withOpacity(0.2),
+                color: Colors.white.withOpacity(0.2),
                 border: Border.all(
                   color: Colors.white.withOpacity(0.4),
                   width: 1.5,

@@ -34,44 +34,14 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Location and Date Range'),
+        title: const Text('Location Setup'),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: GooglePlaceAutoCompleteTextField(
-              textEditingController: _searchController,
-              googleAPIKey: googleApiKey,
-              inputDecoration: const InputDecoration(
-                hintText: "Search Location",
-                border: OutlineInputBorder(),
-              ),
-              debounceTime: 800,
-              isLatLngRequired: true,
-              getPlaceDetailWithLatLng: (Prediction prediction) async {
-                if (prediction.lat != null && prediction.lng != null) {
-                  final lat = double.parse(prediction.lat!);
-                  final lng = double.parse(prediction.lng!);
-                  final latLng = LatLng(lat, lng);
-                  setState(() {
-                    _selectedLocation = latLng;
-                    _selectedLocationName = prediction.description;
-                  });
-                  _mapController?.animateCamera(CameraUpdate.newLatLng(latLng));
-                }
-              },
-              itemClick: (Prediction prediction) {
-                _searchController.text = prediction.description ?? "";
-                _searchController.selection = TextSelection.fromPosition(
-                    TextPosition(offset: prediction.description?.length ?? 0));
-              },
-            ),
-          ),
           Expanded(
             child: GoogleMap(
               initialCameraPosition: const CameraPosition(
-                target: LatLng(0, 0), 
+                target: LatLng(0, 0),
                 zoom: 2,
               ),
               onMapCreated: (controller) {
@@ -93,29 +63,68 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                     },
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
             child: Column(
               children: [
-                if (_selectedLocationName != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Text('Selected Location: $_selectedLocationName'),
-                  ),
-                ElevatedButton(
-                  onPressed: _selectDateRange,
-                  child: Text(
-                    _selectedDateRange == null
-                        ? 'Select Date Range'
-                        : '${_selectedDateRange!.start.toLocal().toString().split(' ')[0]} - ${_selectedDateRange!.end.toLocal().toString().split(' ')[0]}',
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: GooglePlaceAutoCompleteTextField(
+                    textEditingController: _searchController,
+                    googleAPIKey: googleApiKey,
+                    inputDecoration: const InputDecoration(
+                      hintText: "Search Location",
+                      border: OutlineInputBorder(),
+                    ),
+                    debounceTime: 800,
+                    isLatLngRequired: true,
+                    getPlaceDetailWithLatLng: (Prediction prediction) async {
+                      if (prediction.lat != null && prediction.lng != null) {
+                        final lat = double.parse(prediction.lat!);
+                        final lng = double.parse(prediction.lng!);
+                        final latLng = LatLng(lat, lng);
+                        setState(() {
+                          _selectedLocation = latLng;
+                          _selectedLocationName = prediction.description;
+                        });
+                        _mapController?.animateCamera(CameraUpdate.newLatLng(latLng));
+                      }
+                    },
+                    itemClick: (Prediction prediction) {
+                      _searchController.text = prediction.description ?? "";
+                      _searchController.selection = TextSelection.fromPosition(
+                          TextPosition(offset: prediction.description?.length ?? 0));
+                    },
                   ),
                 ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _selectedLocation != null && _selectedDateRange != null
-                      ? _saveLocationAndDateRange
-                      : null,
-                  child: const Text('Save Location and Date Range'),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      if (_selectedLocationName != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Text('Selected Location: $_selectedLocationName'),
+                        ),
+                      ElevatedButton(
+                        onPressed: _selectDateRange,
+                        child: Text(
+                          _selectedDateRange == null
+                              ? 'Select Date Range'
+                              : '${_selectedDateRange!.start.toLocal().toString().split(' ')[0]} - ${_selectedDateRange!.end.toLocal().toString().split(' ')[0]}',
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _selectedLocation != null && _selectedDateRange != null
+                            ? _saveLocationAndDateRange
+                            : null,
+                        child: const Text('Save Location and Date Range'),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
