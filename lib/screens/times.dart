@@ -33,129 +33,184 @@ class _EventScreenState extends State<EventScreen> {
       context: context,
       barrierColor: Colors.black54,
       builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.white.withOpacity(0.05),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    isEdit ? 'Edit Event' : 'Add Event',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  TextField(
-                    controller: titleController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.1),
-                      labelText: 'Title',
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  TextField(
-                    controller: notesController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.1),
-                      labelText: 'Notes (optional)',
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  _buildDateTimePicker(
-                    label: 'Start Date & Time',
-                    date: startDate,
-                    time: startTime,
-                    onDateTimeSelected: (d, t) {
-                      setState(() {
-                        startDate = d;
-                        startTime = t;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 12),
-
-                  _buildDateTimePicker(
-                    label: 'End Date & Time',
-                    date: endDate,
-                    time: endTime,
-                    onDateTimeSelected: (d, t) {
-                      setState(() {
-                        endDate = d;
-                        endTime = t;
-                      });
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              backgroundColor: Colors.white.withOpacity(0.05),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+              ),
+              content: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      TextButton(
-                        child: const Text(
-                          'Cancel',
-                          style: TextStyle(color: Colors.white),
+                      Text(
+                        isEdit ? 'Edit Event' : 'Add Event',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 1.2,
                         ),
-                        onPressed: () => Navigator.pop(context),
                       ),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          shape: const CircleBorder(),
-                          padding: const EdgeInsets.all(16),
-                          elevation: 4,
-                        ),
-                        onPressed: () {
-                          if (titleController.text.isEmpty ||
-                              startDate == null ||
-                              endDate == null ||
-                              startTime == null ||
-                              endTime == null)
-                            return;
+                      const SizedBox(height: 16),
 
-                          final newEvent = Event.create(
-                            title: titleController.text,
-                            description: notesController.text,
-                            startTime: startTime!,
-                            endTime: endTime!,
-                            startDate: startDate!,
-                            endDate: endDate!,
-                          );
-                          if (isEdit) newEvent.id = event!.id;
-                          _saveEvent(newEvent, isEdit: isEdit);
-                          Navigator.pop(context);
+                      TextField(
+                        controller: titleController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          labelText: 'Title',
+                          labelStyle: const TextStyle(color: Colors.white70),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      TextField(
+                        controller: notesController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white.withOpacity(0.1),
+                          labelText: 'Notes (optional)',
+                          labelStyle: const TextStyle(color: Colors.white70),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      _buildDateTimePicker(
+                        label: 'Start Date & Time',
+                        date: startDate,
+                        time: startTime,
+                        onDateTimeSelected: (d, t) {
+                          setStateDialog(() {
+                            startDate = d;
+                            startTime = t;
+                          });
                         },
-                        child: const Icon(Icons.check, color: Colors.white),
+                      ),
+                      const SizedBox(height: 12),
+
+                      _buildDateTimePicker(
+                        label: 'End Date & Time',
+                        date: endDate,
+                        time: endTime,
+                        onDateTimeSelected: (d, t) {
+                          setStateDialog(() {
+                            endDate = d;
+                            endTime = t;
+                          });
+                        },
+                      ),
+
+                      const SizedBox(height: 20),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextButton(
+                            child: const Text(
+                              'Cancel',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              shape: const CircleBorder(),
+                              padding: const EdgeInsets.all(16),
+                              elevation: 4,
+                            ),
+                            onPressed: () {
+                              if (titleController.text.isEmpty ||
+                                  startDate == null ||
+                                  endDate == null ||
+                                  startTime == null ||
+                                  endTime == null)
+                                return;
+
+                              final startDateTime = DateTime(
+                                startDate!.year,
+                                startDate!.month,
+                                startDate!.day,
+                                startTime!.hour,
+                                startTime!.minute,
+                              );
+                              final endDateTime = DateTime(
+                                endDate!.year,
+                                endDate!.month,
+                                endDate!.day,
+                                endTime!.hour,
+                                endTime!.minute,
+                              );
+
+                              if (endDateTime.isBefore(startDateTime)) {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      backgroundColor: Colors.red.withOpacity(
+                                        0.9,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      content: const Text(
+                                        'End time must be after start time.',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          child: const Text(
+                                            'OK',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          onPressed:
+                                              () => Navigator.of(context).pop(),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                                return;
+                              }
+
+                              final newEvent = Event.create(
+                                title: titleController.text,
+                                description: notesController.text,
+                                startTime: startTime!,
+                                endTime: endTime!,
+                                startDate: startDate!,
+                                endDate: endDate!,
+                              );
+                              if (isEdit) newEvent.id = event!.id;
+                              _saveEvent(newEvent, isEdit: isEdit);
+                              Navigator.pop(context);
+                            },
+                            child: const Icon(Icons.check, color: Colors.white),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );
