@@ -183,3 +183,9 @@ Manage your daily chores based on solar events.
 <br />
 
 <!--  AUTH SECTION -->
+
+<div align="center">
+	<h3 align="center">User Account Settings</h3>
+	<em align="center">Users can change profile picture, password, or username</em> <br /> <br />
+	<img src="docs/account management settings.png" alt="Delete Event" width="25%">
+</div>
