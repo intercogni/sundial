@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'dart:math'; 
+import 'dart:math';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:sundial/screens/location_selection_screen.dart';
@@ -10,6 +10,7 @@ import 'package:sundial/functions/solar_api.dart';
 import 'package:sundial/models/task.dart';
 import 'package:sundial/services/task_firestore_service.dart';
 import 'package:sundial/models/solar_data.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key, required this.title}) : super(key: key);
@@ -27,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchAndSetAppointments(DateTime.now(), DateTime.now().add(const Duration(days: 7))); 
+    _fetchAndSetAppointments(DateTime.now(), DateTime.now().add(const Duration(days: 7)));
   }
 
   TimeOfDay? _getTaskTime(Task task, DailySolarData? solarData) {
@@ -80,191 +81,186 @@ class _HomeScreenState extends State<HomeScreen> {
   void _fetchAndSetAppointments(DateTime startDate, DateTime endDate) {
     final List<Appointment> combinedAppointments = [];
 
-    
-    _dailySolarDataService.getDailySolarDataStream(startDate, endDate).listen((dailySolarDataList) {
-      final Map<DateTime, DailySolarData> dailyDataMap = {};
-      for (var dailyData in dailySolarDataList) {
-        final dateKey = DateTime(dailyData.date.year, dailyData.date.month, dailyData.date.day);
-        dailyDataMap[dateKey] = dailyData;
-      }
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _dailySolarDataService.getDailySolarDataStream(startDate, endDate).listen((dailySolarDataList) {
+        final Map<DateTime, DailySolarData> dailyDataMap = {};
+        for (var dailyData in dailySolarDataList) {
+          final dateKey = DateTime(dailyData.date.year, dailyData.date.month, dailyData.date.day);
+          dailyDataMap[dateKey] = dailyData;
+        }
 
-      final List<Appointment> solarAppointments = [];
-      for (var dailyData in dailyDataMap.values) {
-        if (dailyData.astronomicalTwilightBegin != null) {
-          final astronomicalTwilightBeginDateTime = DateTime(
-            dailyData.date.year,
-            dailyData.date.month,
-            dailyData.date.day,
-            dailyData.astronomicalTwilightBegin!.hour,
-            dailyData.astronomicalTwilightBegin!.minute,
-          );
-          solarAppointments.add(Appointment(
-            startTime: astronomicalTwilightBeginDateTime.subtract(const Duration(minutes: 19)),
-            endTime: astronomicalTwilightBeginDateTime.add(const Duration(minutes: 19)),
-            subject: 'fl—',
-            color: Colors.transparent,
-          ));
+        final List<Appointment> solarAppointments = [];
+        for (var dailyData in dailyDataMap.values) {
+          if (dailyData.astronomicalTwilightBegin != null) {
+            final astronomicalTwilightBeginDateTime = DateTime(
+              dailyData.date.year,
+              dailyData.date.month,
+              dailyData.date.day,
+              dailyData.astronomicalTwilightBegin!.hour,
+              dailyData.astronomicalTwilightBegin!.minute,
+            );
+            solarAppointments.add(Appointment(
+              startTime: astronomicalTwilightBeginDateTime.subtract(const Duration(minutes: 19)),
+              endTime: astronomicalTwilightBeginDateTime.add(const Duration(minutes: 19)),
+              subject: 'fl—',
+              color: Colors.transparent,
+            ));
+          }
+          if (dailyData.nauticalTwilightBegin != null) {
+            final nauticalTwilightBeginDateTime = DateTime(
+              dailyData.date.year,
+              dailyData.date.month,
+              dailyData.date.day,
+              dailyData.nauticalTwilightBegin!.hour,
+              dailyData.nauticalTwilightBegin!.minute,
+            );
+            solarAppointments.add(Appointment(
+              startTime: nauticalTwilightBeginDateTime.subtract(const Duration(minutes: 19)),
+              endTime: nauticalTwilightBeginDateTime.add(const Duration(minutes: 19)),
+              subject: 'ds—',
+              color: Colors.transparent,
+            ));
+          }
+          if (dailyData.sunrise != null) {
+            final sunriseDateTime = DateTime(
+              dailyData.date.year,
+              dailyData.date.month,
+              dailyData.date.day,
+              dailyData.sunrise!.hour,
+              dailyData.sunrise!.minute,
+            );
+            solarAppointments.add(Appointment(
+              startTime: sunriseDateTime.subtract(const Duration(minutes: 19)),
+              endTime: sunriseDateTime.add(const Duration(minutes: 19)),
+              subject: 'sr—',
+              color: Colors.transparent,
+            ));
+          }
+          if (dailyData.solarNoon != null) {
+            final solarNoonDateTime = DateTime(
+              dailyData.date.year,
+              dailyData.date.month,
+              dailyData.date.day,
+              dailyData.solarNoon!.hour,
+              dailyData.solarNoon!.minute,
+            );
+            solarAppointments.add(Appointment(
+              startTime: solarNoonDateTime.subtract(const Duration(minutes: 19)),
+              endTime: solarNoonDateTime.add(const Duration(minutes: 19)),
+              subject: 'sn—',
+              color: Colors.transparent,
+            ));
+          }
+          if (dailyData.sunset != null) {
+            final sunsetDateTime = DateTime(
+              dailyData.date.year,
+              dailyData.date.month,
+              dailyData.date.day,
+              dailyData.sunset!.hour,
+              dailyData.sunset!.minute,
+            );
+            solarAppointments.add(Appointment(
+              startTime: sunsetDateTime.subtract(const Duration(minutes: 19)),
+              endTime: sunsetDateTime.add(const Duration(minutes: 19)),
+              subject: 'ss—',
+              color: Colors.transparent,
+            ));
+          }
+          if (dailyData.nauticalTwilightEnd != null) {
+            final nauticalTwilightEndDateTime = DateTime(
+              dailyData.date.year,
+              dailyData.date.day,
+              dailyData.nauticalTwilightEnd!.hour,
+              dailyData.nauticalTwilightEnd!.minute,
+            );
+            solarAppointments.add(Appointment(
+              startTime: nauticalTwilightEndDateTime.subtract(const Duration(minutes: 19)),
+              endTime: nauticalTwilightEndDateTime.add(const Duration(minutes: 19)),
+              subject: 'll—',
+              color: Colors.transparent,
+            ));
+          }
+          if (dailyData.astronomicalTwilightEnd != null) {
+            final astronomicalTwilightEndDateTime = DateTime(
+              dailyData.date.year,
+              dailyData.date.day,
+              dailyData.astronomicalTwilightEnd!.hour,
+              dailyData.astronomicalTwilightEnd!.minute,
+            );
+            solarAppointments.add(Appointment(
+              startTime: astronomicalTwilightEndDateTime.subtract(const Duration(minutes: 19)),
+              endTime: astronomicalTwilightEndDateTime.add(const Duration(minutes: 19)),
+              subject: 'nh—',
+              color: Colors.transparent,
+            ));
+          }
         }
-        if (dailyData.nauticalTwilightBegin != null) {
-          final nauticalTwilightBeginDateTime = DateTime(
-            dailyData.date.year,
-            dailyData.date.month,
-            dailyData.date.day,
-            dailyData.nauticalTwilightBegin!.hour,
-            dailyData.nauticalTwilightBegin!.minute,
-          );
-          solarAppointments.add(Appointment(
-            startTime: nauticalTwilightBeginDateTime.subtract(const Duration(minutes: 19)),
-            endTime: nauticalTwilightBeginDateTime.add(const Duration(minutes: 19)),
-            subject: 'ds—',
-            color: Colors.transparent,
-          ));
-        }
-        if (dailyData.sunrise != null) {
-          final sunriseDateTime = DateTime(
-            dailyData.date.year,
-            dailyData.date.month,
-            dailyData.date.day,
-            dailyData.sunrise!.hour,
-            dailyData.sunrise!.minute,
-          );
-          solarAppointments.add(Appointment(
-            startTime: sunriseDateTime.subtract(const Duration(minutes: 19)),
-            endTime: sunriseDateTime.add(const Duration(minutes: 19)),
-            subject: 'sr—',
-            color: Colors.transparent,
-          ));
-        }
-        if (dailyData.solarNoon != null) {
-          final solarNoonDateTime = DateTime(
-            dailyData.date.year,
-            dailyData.date.month,
-            dailyData.date.day,
-            dailyData.solarNoon!.hour,
-            dailyData.solarNoon!.minute,
-          );
-          solarAppointments.add(Appointment(
-            startTime: solarNoonDateTime.subtract(const Duration(minutes: 19)),
-            endTime: solarNoonDateTime.add(const Duration(minutes: 19)),
-            subject: 'sn—',
-            color: Colors.transparent,
-          ));
-        }
-        if (dailyData.sunset != null) {
-          final sunsetDateTime = DateTime(
-            dailyData.date.year,
-            dailyData.date.month,
-            dailyData.date.day,
-            dailyData.sunset!.hour,
-            dailyData.sunset!.minute,
-          );
-          solarAppointments.add(Appointment(
-            startTime: sunsetDateTime.subtract(const Duration(minutes: 19)),
-            endTime: sunsetDateTime.add(const Duration(minutes: 19)),
-            subject: 'ss—',
-            color: Colors.transparent,
-          ));
-        }
-        if (dailyData.nauticalTwilightEnd != null) {
-          final nauticalTwilightEndDateTime = DateTime(
-            dailyData.date.year,
-            dailyData.date.month,
-            dailyData.date.day,
-            dailyData.nauticalTwilightEnd!.hour,
-            dailyData.nauticalTwilightEnd!.minute,
-          );
-          solarAppointments.add(Appointment(
-            startTime: nauticalTwilightEndDateTime.subtract(const Duration(minutes: 19)),
-            endTime: nauticalTwilightEndDateTime.add(const Duration(minutes: 19)),
-            subject: 'll—',
-            color: Colors.transparent,
-          ));
-        }
-        if (dailyData.astronomicalTwilightEnd != null) {
-          final astronomicalTwilightEndDateTime = DateTime(
-            dailyData.date.year,
-            dailyData.date.month,
-            dailyData.date.day,
-            dailyData.astronomicalTwilightEnd!.hour,
-            dailyData.astronomicalTwilightEnd!.minute,
-          );
-          solarAppointments.add(Appointment(
-            startTime: astronomicalTwilightEndDateTime.subtract(const Duration(minutes: 19)),
-            endTime: astronomicalTwilightEndDateTime.add(const Duration(minutes: 19)),
-            subject: 'nh—',
-            color: Colors.transparent,
-          ));
-        }
-      }
-      combinedAppointments.addAll(solarAppointments);
+        combinedAppointments.addAll(solarAppointments);
 
-      _taskService.getTasksStream().listen((tasks) {
-        final List<Appointment> taskAppointments = [];
-        for (var i = 0; i <= endDate.difference(startDate).inDays; i++) {
-          final currentDate = startDate.add(Duration(days: i));
-          final DailySolarData? solarDataForCurrentDate = dailyDataMap[DateTime(currentDate.year, currentDate.month, currentDate.day)];
+        _taskService.getTasksStream().listen((tasks) {
+          final List<Appointment> taskAppointments = [];
+          for (var i = 0; i <= endDate.difference(startDate).inDays; i++) {
+            final currentDate = startDate.add(Duration(days: i));
+            final DailySolarData? solarDataForCurrentDate = dailyDataMap[DateTime(currentDate.year, currentDate.month, currentDate.day)];
 
-          for (var task in tasks) {
-            bool shouldAdd = false;
+            for (var task in tasks) {
+              bool shouldAdd = false;
 
-            if (task.repeatOptions == null || task.repeatOptions!.type == RepeatType.none) {
-              
-              if (task.dueDate.year == currentDate.year &&
-                  task.dueDate.month == currentDate.month &&
-                  task.dueDate.day == currentDate.day) {
+              if (task.repeatOptions == null || task.repeatOptions!.type == RepeatType.none) {
+                if (task.dueDate.year == currentDate.year &&
+                    task.dueDate.month == currentDate.month &&
+                    task.dueDate.day == currentDate.day) {
+                  shouldAdd = true;
+                }
+              } else if (task.repeatOptions!.type == RepeatType.daily) {
                 shouldAdd = true;
+              } else if (task.repeatOptions!.type == RepeatType.weekly) {
+                if (task.repeatOptions!.selectedDays.contains(currentDate.weekday)) {
+                  shouldAdd = true;
+                }
               }
-            } else if (task.repeatOptions!.type == RepeatType.daily) {
-              
-              shouldAdd = true;
-            } else if (task.repeatOptions!.type == RepeatType.weekly) {
-              
-              
-              if (task.repeatOptions!.selectedDays.contains(currentDate.weekday)) {
-                shouldAdd = true;
-              }
-            }
 
-            if (shouldAdd) {
-              final TimeOfDay? taskTime = _getTaskTime(task, solarDataForCurrentDate);
+              if (shouldAdd) {
+                final TimeOfDay? taskTime = _getTaskTime(task, solarDataForCurrentDate);
 
-              if (taskTime != null) {
-                final taskDateTime = DateTime(
-                  currentDate.year,
-                  currentDate.month,
-                  currentDate.day,
-                  taskTime.hour,
-                  taskTime.minute,
-                );
+                if (taskTime != null) {
+                  final taskDateTime = DateTime(
+                    currentDate.year,
+                    currentDate.month,
+                    currentDate.day,
+                    taskTime.hour,
+                    taskTime.minute,
+                  );
 
-                taskAppointments.add(Appointment(
-                  startTime: taskDateTime.subtract(const Duration(minutes: 20)),
-                  endTime: taskDateTime.add(const Duration(minutes: 20)), 
-                  subject: task.title,
-                  color: _generateColorForTime(task.title), 
-                  isAllDay: false,
-                ));
+                  taskAppointments.add(Appointment(
+                    startTime: taskDateTime.subtract(const Duration(minutes: 20)),
+                    endTime: taskDateTime.add(const Duration(minutes: 20)),
+                    subject: task.title,
+                    color: _generateColorForTime(task.title),
+                    isAllDay: false,
+                  ));
+                }
               }
             }
           }
-        }
-        combinedAppointments.addAll(taskAppointments);
-        setState(() {
-          _appointments = combinedAppointments;
+          combinedAppointments.addAll(taskAppointments);
+          setState(() {
+            _appointments = combinedAppointments;
+          });
         });
       });
-    });
+    }
   }
 
   Color _generateColorForTime(String taskName) {
-    
     final int seed = taskName.hashCode;
     final Random random = Random(seed);
     return Color.fromARGB(
-      255, 
-      random.nextInt(200) + 10, 
-      random.nextInt(200) + 10, 
-      random.nextInt(200) + 10, 
+      255,
+      random.nextInt(200) + 10,
+      random.nextInt(200) + 10,
+      random.nextInt(200) + 10,
     );
   }
 
@@ -365,52 +361,56 @@ class _HomeScreenState extends State<HomeScreen> {
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 onPressed: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const LocationSelectionScreen(),
-                    ),
-                  );
-                  if (result != null) {
-                    final selectedLocation = result['location'];
-                    final selectedDateRange = result['dateRange'];
-                    final selectedLocationName = result['locationName'];
+                  final user = FirebaseAuth.instance.currentUser;
+                  if (user != null) {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LocationSelectionScreen(),
+                      ),
+                    );
+                    if (result != null) {
+                      final selectedLocation = result['location'];
+                      final selectedDateRange = result['dateRange'];
+                      final selectedLocationName = result['locationName'];
 
-                    if (selectedLocation != null && selectedDateRange != null) {
-                      final startDate = selectedDateRange.start;
-                      final endDate = selectedDateRange.end;
+                      if (selectedLocation != null && selectedDateRange != null) {
+                        final startDate = selectedDateRange.start;
+                        final endDate = selectedDateRange.end;
 
-                      for (int i = 0; i <= endDate.difference(startDate).inDays; i++) {
-                        final currentDate = startDate.add(Duration(days: i));
-                        try {
-                          final solarData = await SolarApi.fetchSolar(
-                            selectedLocation.latitude,
-                            selectedLocation.longitude,
-                          );
-
-                          if (solarData != null && solarData['parsed'] != null) {
-                            final parsedSolarEvents = solarData['parsed'] as Map<String, DateTime>;
-
-                            final dailyData = DailySolarData(
-                              date: currentDate,
-                              latitude: selectedLocation.latitude,
-                              longitude: selectedLocation.longitude,
-                              locationName: selectedLocationName,
-                              sunrise: parsedSolarEvents['sunrise'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['sunrise']!) : null,
-                              sunset: parsedSolarEvents['sunset'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['sunset']!) : null,
-                              solarNoon: parsedSolarEvents['solar_noon'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['solar_noon']!) : null,
-                              astronomicalTwilightBegin: parsedSolarEvents['astronomical_twilight_begin'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['astronomical_twilight_begin']!) : null,
-                              astronomicalTwilightEnd: parsedSolarEvents['astronomical_twilight_end'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['astronomical_twilight_end']!) : null,
-                              nauticalTwilightBegin: parsedSolarEvents['nautical_twilight_begin'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['nautical_twilight_begin']!) : null,
-                              nauticalTwilightEnd: parsedSolarEvents['nautical_twilight_end'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['nautical_twilight_end']!) : null,
+                        for (int i = 0; i <= endDate.difference(startDate).inDays; i++) {
+                          final currentDate = startDate.add(Duration(days: i));
+                          try {
+                            final solarData = await SolarApi.fetchSolar(
+                              selectedLocation.latitude,
+                              selectedLocation.longitude,
                             );
 
-                            await _dailySolarDataService.addDailySolarData(dailyData);
-                          } else {
-                            print('Failed to fetch solar data for ${currentDate.toLocal()}');
+                            if (solarData != null && solarData['parsed'] != null) {
+                              final parsedSolarEvents = solarData['parsed'] as Map<String, DateTime>;
+
+                              final dailyData = DailySolarData(
+                                date: currentDate,
+                                latitude: selectedLocation.latitude,
+                                longitude: selectedLocation.longitude,
+                                locationName: selectedLocationName,
+                                userId: user.uid,
+                                sunrise: parsedSolarEvents['sunrise'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['sunrise']!) : null,
+                                sunset: parsedSolarEvents['sunset'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['sunset']!) : null,
+                                solarNoon: parsedSolarEvents['solar_noon'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['solar_noon']!) : null,
+                                astronomicalTwilightBegin: parsedSolarEvents['astronomical_twilight_begin'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['astronomical_twilight_begin']!) : null,
+                                astronomicalTwilightEnd: parsedSolarEvents['astronomical_twilight_end'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['astronomical_twilight_end']!) : null,
+                                nauticalTwilightBegin: parsedSolarEvents['nautical_twilight_begin'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['nautical_twilight_begin']!) : null,
+                                nauticalTwilightEnd: parsedSolarEvents['nautical_twilight_end'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['nautical_twilight_end']!) : null,
+                              );
+
+                              await _dailySolarDataService.addDailySolarData(dailyData);
+                            } else {
+                              print('Failed to fetch solar data for ${currentDate.toLocal()}');
+                            }
+                          } catch (e) {
+                            print('Error saving solar data for ${currentDate.toLocal()}: $e');
                           }
-                        } catch (e) {
-                          print('Error saving solar data for ${currentDate.toLocal()}: $e');
                         }
                       }
                     }

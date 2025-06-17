@@ -8,6 +8,7 @@ import 'package:ming_cute_icons/ming_cute_icons.dart';
 import 'package:sundial/services/daily_solar_data_service.dart';
 import 'package:sundial/models/daily_solar_data.dart';
 import 'package:sundial/functions/solar_api.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LocationSelectionScreen extends StatefulWidget {
   const LocationSelectionScreen({Key? key}) : super(key: key);
@@ -176,16 +177,16 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
                 target: LatLng(0, 0),
                 zoom: 2,
               ),
-            onMapCreated: (controller) {
-              _mapController = controller;
-              controller.setMapStyle(_mapStyle);
-            },
-            onTap: (latLng) async {
-              setState(() {
-                _selectedLocation = latLng;
-              });
-              await _getPlaceNameFromCoordinates(latLng);
-            },
+              onMapCreated: (controller) {
+                _mapController = controller;
+                controller.setMapStyle(_mapStyle);
+              },
+              onTap: (latLng) async {
+                setState(() {
+                  _selectedLocation = latLng;
+                });
+                await _getPlaceNameFromCoordinates(latLng);
+              },
               markers: _selectedLocation == null
                   ? {}
                   : {
@@ -200,13 +201,13 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
             top: 50.0,
             left: 8.0,
             right: 16.0,
-            child:  Row(
+            child: Row(
               children: [
                 IconButton(
-                    icon: const Icon(
+                  icon: const Icon(
                     MingCuteIcons.mgc_arrow_left_fill,
                     size: 28.0,
-                    ),
+                  ),
                   onPressed: () {
                     Navigator.pop(context);
                   },
@@ -370,44 +371,50 @@ class _LocationSelectionScreenState extends State<LocationSelectionScreen> {
       final dailySolarDataService = DailySolarDataService();
       final startDate = _selectedDateRange!.start;
       final endDate = _selectedDateRange!.end;
+      final user = FirebaseAuth.instance.currentUser;
 
-      for (int i = 0; i <= endDate.difference(startDate).inDays; i++) {
-        final currentDate = startDate.add(Duration(days: i));
-        try {
-          final solarData = await SolarApi.fetchSolar(
-            _selectedLocation!.latitude,
-            _selectedLocation!.longitude,
-          );
-
-          if (solarData != null && solarData['parsed'] != null) {
-            final parsedSolarEvents = solarData['parsed'] as Map<String, DateTime>;
-
-            final dailyData = DailySolarData(
-              date: currentDate,
-              latitude: _selectedLocation!.latitude,
-              longitude: _selectedLocation!.longitude,
-              locationName: _selectedLocationName,
-              sunrise: parsedSolarEvents['sunrise'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['sunrise']!) : null,
-              sunset: parsedSolarEvents['sunset'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['sunset']!) : null,
-              solarNoon: parsedSolarEvents['solar_noon'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['solar_noon']!) : null,
-              astronomicalTwilightBegin: parsedSolarEvents['astronomical_twilight_begin'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['astronomical_twilight_begin']!) : null,
-              astronomicalTwilightEnd: parsedSolarEvents['astronomical_twilight_end'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['astronomical_twilight_end']!) : null,
-              nauticalTwilightBegin: parsedSolarEvents['nautical_twilight_begin'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['nautical_twilight_begin']!) : null,
-              nauticalTwilightEnd: parsedSolarEvents['nautical_twilight_end'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['nautical_twilight_end']!) : null,
+      if (user != null) {
+        for (int i = 0; i <= endDate.difference(startDate).inDays; i++) {
+          final currentDate = startDate.add(Duration(days: i));
+          try {
+            final solarData = await SolarApi.fetchSolar(
+              _selectedLocation!.latitude,
+              _selectedLocation!.longitude,
             );
-          } else {
-            print('Failed to fetch solar data for ${currentDate.toLocal()}');
-          }
-        } catch (e) {
-          print('Error saving solar data for ${currentDate.toLocal()}: $e');
-        }
-      }
 
-      Navigator.pop(context, {
-        'location': _selectedLocation,
-        'dateRange': _selectedDateRange,
-        'locationName': _selectedLocationName,
-      });
+            if (solarData != null && solarData['parsed'] != null) {
+              final parsedSolarEvents = solarData['parsed'] as Map<String, DateTime>;
+
+              final dailyData = DailySolarData(
+                date: currentDate,
+                latitude: _selectedLocation!.latitude,
+                longitude: _selectedLocation!.longitude,
+                locationName: _selectedLocationName,
+                userId: user.uid,
+                sunrise: parsedSolarEvents['sunrise'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['sunrise']!) : null,
+                sunset: parsedSolarEvents['sunset'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['sunset']!) : null,
+                solarNoon: parsedSolarEvents['solar_noon'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['solar_noon']!) : null,
+                astronomicalTwilightBegin: parsedSolarEvents['astronomical_twilight_begin'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['astronomical_twilight_begin']!) : null,
+                astronomicalTwilightEnd: parsedSolarEvents['astronomical_twilight_end'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['astronomical_twilight_end']!) : null,
+                nauticalTwilightBegin: parsedSolarEvents['nautical_twilight_begin'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['nautical_twilight_begin']!) : null,
+                nauticalTwilightEnd: parsedSolarEvents['nautical_twilight_end'] != null ? TimeOfDay.fromDateTime(parsedSolarEvents['nautical_twilight_end']!) : null,
+              );
+
+              await dailySolarDataService.addDailySolarData(dailyData);
+            } else {
+              print('Failed to fetch solar data for ${currentDate.toLocal()}');
+            }
+          } catch (e) {
+            print('Error saving solar data for ${currentDate.toLocal()}: $e');
+          }
+        }
+
+        Navigator.pop(context, {
+          'location': _selectedLocation,
+          'dateRange': _selectedDateRange,
+          'locationName': _selectedLocationName,
+        });
+      }
     }
   }
 }

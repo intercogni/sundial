@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/task.dart';
 
 class TaskFirestoreService {
@@ -7,6 +8,11 @@ class TaskFirestoreService {
 
   
   Future<void> addTask(Task task) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      throw Exception('User not logged in');
+    }
+    task.userId = user.uid;
     try {
       await _db.collection(_collectionName).add(task.toFirestore());
     } catch (e) {
@@ -40,7 +46,15 @@ class TaskFirestoreService {
 
   
   Stream<List<Task>> getTasksStream() {
-    return _db.collection(_collectionName).snapshots().map((snapshot) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      return Stream.value([]);
+    }
+
+    return _db.collection(_collectionName)
+        .where('userId', isEqualTo: user.uid)
+        .snapshots()
+        .map((snapshot) {
       return snapshot.docs.map((doc) => Task.fromFirestore(doc)).toList();
     });
   }

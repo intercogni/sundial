@@ -7,6 +7,7 @@ class DailySolarData {
   final double latitude;
   final double longitude;
   final String? locationName;
+  final String userId;
   final TimeOfDay? sunrise;
   final TimeOfDay? sunset;
   final TimeOfDay? solarNoon;
@@ -21,6 +22,7 @@ class DailySolarData {
     required this.latitude,
     required this.longitude,
     this.locationName,
+    required this.userId,
     this.sunrise,
     this.sunset,
     this.solarNoon,
@@ -38,6 +40,7 @@ class DailySolarData {
       latitude: data['latitude'],
       longitude: data['longitude'],
       locationName: data['locationName'],
+      userId: data['userId'] ?? 'defaultUserId',
       sunrise: _timeOfDayFromMap(data['sunrise']),
       sunset: _timeOfDayFromMap(data['sunset']),
       solarNoon: _timeOfDayFromMap(data['solarNoon']),
@@ -54,6 +57,7 @@ class DailySolarData {
       'latitude': latitude,
       'longitude': longitude,
       'locationName': locationName,
+      'userId': userId,
       'sunrise': _timeOfDayToMap(sunrise),
       'sunset': _timeOfDayToMap(sunset),
       'solarNoon': _timeOfDayToMap(solarNoon),

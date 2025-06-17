@@ -3,7 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:sundial/models/solar_data.dart';
 import 'package:sundial/widgets/sundial_divider.dart';
 import 'dart:ui';
-import 'package:sundial/models/task.dart'; 
+import 'package:sundial/models/task.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sundial/services/task_firestore_service.dart'; 
 import 'package:cloud_firestore/cloud_firestore.dart'; 
 import 'package:sundial/functions/sundial.dart'; 
@@ -664,15 +665,25 @@ class _DialScreenState extends State<DialScreen> {
                       final now = DateTime.now();
                       final dueDate = DateTime(now.year, now.month, now.day, selectedTime?.hour ?? 0, selectedTime?.minute ?? 0);
                       _addTask(
-                        Task(title: title, description: description, dueDate: dueDate, repeatOptions: finalRepeatOptions),
+                        Task(
+                            title: title,
+                            description: description,
+                            dueDate: dueDate,
+                            repeatOptions: finalRepeatOptions,
+                            userId: FirebaseAuth.instance.currentUser?.uid),
                       );
                       Navigator.pop(context);
                     } else if (isRelative && solarEvent != null && offsetMinutes != null) {
-                      
-                      
-                      
                       _addTask(
-                        Task(title: title, description: description, dueDate: DateTime.now(), isRelative: true, solarEvent: solarEvent, offsetMinutes: offsetMinutes, repeatOptions: finalRepeatOptions),
+                        Task(
+                            title: title,
+                            description: description,
+                            dueDate: DateTime.now(),
+                            isRelative: true,
+                            solarEvent: solarEvent,
+                            offsetMinutes: offsetMinutes,
+                            repeatOptions: finalRepeatOptions,
+                            userId: FirebaseAuth.instance.currentUser?.uid),
                       );
                       Navigator.pop(context);
                     }
@@ -1010,22 +1021,24 @@ class _DialScreenState extends State<DialScreen> {
                           solarEvent: null,
                           offsetMinutes: null,
                           repeatOptions: finalRepeatOptions,
+                          userId: taskToUpdate.userId,
                         ),
                       );
                       Navigator.pop(context);
                     } else if (isRelative && solarEvent != null && offsetMinutes != null) {
                       _updateTask(
                         Task(
-                          id: taskToUpdate.id, 
+                          id: taskToUpdate.id,
                           title: title,
                           description: description,
-                          dueDate: taskToUpdate.dueDate, 
+                          dueDate: taskToUpdate.dueDate,
                           isCompleted: taskToUpdate.isCompleted,
                           timeInMinutes: taskToUpdate.timeInMinutes,
                           isRelative: true,
                           solarEvent: solarEvent,
                           offsetMinutes: offsetMinutes,
                           repeatOptions: finalRepeatOptions,
+                          userId: taskToUpdate.userId,
                         ),
                       );
                       Navigator.pop(context);
