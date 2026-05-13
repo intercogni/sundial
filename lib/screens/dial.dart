@@ -298,6 +298,10 @@ class _DialScreenState extends State<DialScreen> {
                                           style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500),
                                         ),
                                         Text(
+                                          task.subject,
+                                          style: const TextStyle(color: Colors.white70, fontSize: 13, fontStyle: FontStyle.italic),
+                                        ),
+                                        Text(
                                           task.description,
                                           style: const TextStyle(color: Colors.white70, fontSize: 13, fontStyle: FontStyle.italic),
                                         ),
@@ -355,6 +359,7 @@ class _DialScreenState extends State<DialScreen> {
   Future<void> _showAddDialog(BuildContext context) async {
     String title = '';
     String description = '';
+    String subject = '';
     TimeOfDay? selectedTime; 
     bool isRelative = false;
     String? solarEvent;
@@ -456,6 +461,23 @@ class _DialScreenState extends State<DialScreen> {
                       style: const TextStyle(color: Colors.white),
                       onChanged: (value) {
                         description = value;
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      decoration: InputDecoration(
+                        labelText: 'subject',
+                        labelStyle: const TextStyle(color: Colors.white),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.3),
+                      ),
+                      style: const TextStyle(color: Colors.white),
+                      onChanged: (value) {
+                        subject = value;
                       },
                     ),
                     const SizedBox(height: 20),
@@ -655,7 +677,7 @@ class _DialScreenState extends State<DialScreen> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  if (title.isNotEmpty && description.isNotEmpty) {
+                  if (title.isNotEmpty && description.isNotEmpty && subject.isNotEmpty) {
                     RepeatOptions? finalRepeatOptions;
                     if (repeatType != RepeatType.none) {
                       finalRepeatOptions = RepeatOptions(type: repeatType, selectedDays: selectedDays);
@@ -668,6 +690,7 @@ class _DialScreenState extends State<DialScreen> {
                         Task(
                             title: title,
                             description: description,
+                            subject: subject,
                             dueDate: dueDate,
                             repeatOptions: finalRepeatOptions,
                             userId: FirebaseAuth.instance.currentUser?.uid),
@@ -678,6 +701,7 @@ class _DialScreenState extends State<DialScreen> {
                         Task(
                             title: title,
                             description: description,
+                            subject: subject,
                             dueDate: DateTime.now(),
                             isRelative: true,
                             solarEvent: solarEvent,
@@ -711,6 +735,7 @@ class _DialScreenState extends State<DialScreen> {
   Future<void> _showUpdateDialog(BuildContext context, Task taskToUpdate) async {
     String title = taskToUpdate.title;
     String description = taskToUpdate.description;
+    String subject = taskToUpdate.subject;
     TimeOfDay? selectedTime = TimeOfDay.fromDateTime(taskToUpdate.dueDate); 
     bool isRelative = taskToUpdate.isRelative;
     String? solarEvent = taskToUpdate.solarEvent;
@@ -781,6 +806,24 @@ class _DialScreenState extends State<DialScreen> {
                         description = value;
                       },
                       controller: TextEditingController(text: description),
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      decoration: InputDecoration(
+                        labelText: 'subject',
+                        labelStyle: const TextStyle(color: Colors.white),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.white.withOpacity(0.3),
+                      ),
+                      style: const TextStyle(color: Colors.white),
+                      onChanged: (value) {
+                        subject = value;
+                      },
+                      controller: TextEditingController(text: subject),
                     ),
                     const SizedBox(height: 20),
                     ClipRRect(
@@ -1000,7 +1043,7 @@ class _DialScreenState extends State<DialScreen> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  if (title.isNotEmpty && description.isNotEmpty) {
+                  if (title.isNotEmpty && description.isNotEmpty && subject.isNotEmpty) {
                     RepeatOptions? finalRepeatOptions;
                     if (repeatType != RepeatType.none) {
                       finalRepeatOptions = RepeatOptions(type: repeatType, selectedDays: selectedDays);
@@ -1014,6 +1057,7 @@ class _DialScreenState extends State<DialScreen> {
                           id: taskToUpdate.id, 
                           title: title,
                           description: description,
+                          subject: subject,
                           dueDate: dueDate,
                           isCompleted: taskToUpdate.isCompleted, 
                           timeInMinutes: taskToUpdate.timeInMinutes, 
@@ -1031,6 +1075,7 @@ class _DialScreenState extends State<DialScreen> {
                           id: taskToUpdate.id,
                           title: title,
                           description: description,
+                          subject: subject,
                           dueDate: taskToUpdate.dueDate,
                           isCompleted: taskToUpdate.isCompleted,
                           timeInMinutes: taskToUpdate.timeInMinutes,

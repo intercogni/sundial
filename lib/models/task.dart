@@ -34,6 +34,7 @@ class Task {
   String? id;
   String title;
   String description;
+  String subject;
   DateTime dueDate;
   bool isCompleted;
   int? timeInMinutes;
@@ -47,6 +48,7 @@ class Task {
     this.id,
     required this.title,
     required this.description,
+    required this.subject,
     required this.dueDate,
     this.isCompleted = false,
     this.timeInMinutes,
@@ -61,6 +63,7 @@ class Task {
     return {
       'title': title,
       'description': description,
+      'subject': subject,
       'dueDate': dueDate,
       'isCompleted': isCompleted,
       'timeInMinutes': timeInMinutes,
@@ -78,6 +81,7 @@ class Task {
       id: doc.id,
       title: data['title'] ?? '',
       description: data['description'] ?? '',
+      subject: data['subject'] ?? '',
       dueDate: (data['dueDate'] as Timestamp).toDate(),
       isCompleted: data['isCompleted'] ?? false,
       timeInMinutes: data['timeInMinutes'],
